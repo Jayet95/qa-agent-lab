@@ -1,0 +1,30 @@
+[
+  {
+    "signature": "text|vorname",
+    "key": "firstName"
+  },
+  {
+    "signature": "text|nachname",
+    "key": "lastName"
+  },
+  {
+    "signature": "email|e-mail-adresse",
+    "key": "email"
+  },
+  {
+    "signature": "password|passwort",
+    "key": "password"
+  },
+  {
+    "signature": "text|geburtsdatum",
+    "key": "dateOfBirth"
+  },
+  {
+    "signature": "numeric|postleitzahl",
+    "key": "postalCode"
+  },
+  {
+    "signature": "numeric|steuer-id 11 ziffern",
+    "key": "taxId"
+  }
+]

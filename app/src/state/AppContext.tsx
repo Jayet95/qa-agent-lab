@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useMemo, useRef, useState, type ReactNode } from 'react';
-import { readLaunchParams, type BugId } from '../lib/launchParams';
+import { readLaunchParams, type BugId, type Drift } from '../lib/launchParams';
 
 export const STARTING_BALANCE = 1000;
 export const DAILY_LIMIT = 500;
@@ -28,6 +28,7 @@ interface AppState {
   recordPayment: (to: string, amount: number) => void;
   showToast: (message: string) => void;
   hasBug: (bug: BugId) => boolean;
+  hasDrift: (drift: Drift) => boolean;
 }
 
 const AppContext = createContext<AppState | null>(null);
@@ -77,6 +78,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     recordPayment,
     showToast,
     hasBug,
+    hasDrift: (d) => launch.drift.includes(d),
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

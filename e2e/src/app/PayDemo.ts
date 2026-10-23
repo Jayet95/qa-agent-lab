@@ -34,9 +34,10 @@ export class PayDemo {
    * Opens the app. `seed` skips UI set-up for preconditions (like seeding a
    * DB) so each scenario only drives the UI for what it actually tests.
    */
-  async open(path = '/', seed?: Seed) {
+  async open(path = '/', seed?: Seed, extra: Record<string, string> = {}) {
     const url = new URL(path, this.baseUrl);
     if (seed) url.searchParams.set('seed', seed);
+    for (const [k, v] of Object.entries(extra)) url.searchParams.set(k, v);
     if (this.bugs.length) url.searchParams.set('bugs', this.bugs.join(','));
     await this.page.goto(url.toString());
   }

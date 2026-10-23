@@ -48,26 +48,39 @@ export function Card({ children, testID }: { children: ReactNode; testID?: strin
 interface FieldProps extends TextInputProps {
   label: string;
   error?: string | null;
-  testID: string;
+  /** Optional on purpose: market forms leave many fields without one. */
+  testID?: string;
   /** Optional element shown to the right of the label (e.g. a badge). */
   hint?: ReactNode;
+  /**
+   * How the field is named: 'aria' (visible label + accessible name),
+   * 'visual' (visible label only — not linked to the input), or
+   * 'placeholder' (no label at all).
+   */
+  labelMode?: 'aria' | 'visual' | 'placeholder';
 }
 
-export function Field({ label, error, testID, hint, ...input }: FieldProps) {
+export function Field({ label, error, testID, hint, labelMode = 'aria', ...input }: FieldProps) {
   return (
     <View style={{ marginBottom: 14 }}>
-      <View style={s.labelRow}>
-        <Text style={s.label}>{label}</Text>
-        {hint}
-      </View>
+      {labelMode !== 'placeholder' ? (
+        <View style={s.labelRow}>
+          <Text style={s.label}>{label}</Text>
+          {hint}
+        </View>
+      ) : null}
       <TextInput
         {...input}
         testID={testID}
-        accessibilityLabel={label}
+        accessibilityLabel={labelMode === 'aria' ? label : undefined}
         placeholderTextColor="#A8A3BC"
         style={[s.input, error ? s.inputError : null]}
       />
-      {error ? <Text style={s.error} testID={`${testID}-error`}>{error}</Text> : null}
+      {error ? (
+        <Text style={s.error} testID={testID ? `${testID}-error` : undefined} accessibilityRole="alert">
+          {error}
+        </Text>
+      ) : null}
     </View>
   );
 }
@@ -75,7 +88,7 @@ export function Field({ label, error, testID, hint, ...input }: FieldProps) {
 interface ButtonProps {
   label: string;
   onPress: () => void;
-  testID: string;
+  testID?: string;
   disabled?: boolean;
   loading?: boolean;
   variant?: 'primary' | 'ghost';

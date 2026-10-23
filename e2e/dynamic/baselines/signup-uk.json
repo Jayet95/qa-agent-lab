@@ -1,0 +1,26 @@
+[
+  {
+    "signature": "text|your full name",
+    "key": "fullName"
+  },
+  {
+    "signature": "email|email",
+    "key": "email"
+  },
+  {
+    "signature": "password|create a password",
+    "key": "password"
+  },
+  {
+    "signature": "text|date of birth",
+    "key": "dateOfBirth"
+  },
+  {
+    "signature": "text|postcode",
+    "key": "postalCode"
+  },
+  {
+    "signature": "tel|mobile number",
+    "key": "phone"
+  }
+]

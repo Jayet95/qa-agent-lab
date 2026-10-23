@@ -1,0 +1,7 @@
+{
+  "email-validation": "Sign-up accepts malformed email addresses",
+  "kyc-stuck": "Identity verification never completes",
+  "expiry-check": "Expired identity documents are accepted",
+  "limit-check": "Daily send limit is enforced at $600 instead of $500",
+  "balance-update": "Balance is not deducted after a payment"
+}

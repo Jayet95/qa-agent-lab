@@ -1,0 +1,26 @@
+[
+  {
+    "signature": "text|full name",
+    "key": "fullName"
+  },
+  {
+    "signature": "email|e-mail",
+    "key": "email"
+  },
+  {
+    "signature": "password|password",
+    "key": "password"
+  },
+  {
+    "signature": "numeric|teudat zehut id number",
+    "key": "nationalId"
+  },
+  {
+    "signature": "text|city",
+    "key": "city"
+  },
+  {
+    "signature": "tel|phone",
+    "key": "phone"
+  }
+]

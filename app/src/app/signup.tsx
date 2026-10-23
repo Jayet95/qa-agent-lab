@@ -1,8 +1,16 @@
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
+import { MarketSignUp } from '../components/MarketSignUp';
 import { Button, Field, Screen, Title } from '../components/ui';
+import { MARKETS, type MarketId } from '../lib/markets';
 import { isValidEmail, passwordProblem } from '../lib/validation';
 import { useApp } from '../state/AppContext';
+
+export default function SignUpRoute() {
+  const { market } = useLocalSearchParams<{ market?: string }>();
+  if (market && market in MARKETS) return <MarketSignUp marketId={market as MarketId} />;
+  return <SignUp />;
+}
 
 interface Errors {
   name?: string | null;
@@ -10,8 +18,8 @@ interface Errors {
   password?: string | null;
 }
 
-export default function SignUp() {
-  const { signUp, hasBug } = useApp();
+function SignUp() {
+  const { signUp, hasBug, hasDrift } = useApp();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -74,7 +82,12 @@ export default function SignUp() {
         secureTextEntry
         error={errors.password}
       />
-      <Button testID="signup-submit" label="Create account" onPress={submit} />
+      <Button
+        // ?drift=testids simulates a release that renamed this testID
+        testID={hasDrift('testids') ? 'signup-create-account' : 'signup-submit'}
+        label="Create account"
+        onPress={submit}
+      />
     </Screen>
   );
 }

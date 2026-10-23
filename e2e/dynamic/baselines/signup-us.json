@@ -1,0 +1,34 @@
+[
+  {
+    "signature": "text|first name",
+    "key": "firstName"
+  },
+  {
+    "signature": "text|last name",
+    "key": "lastName"
+  },
+  {
+    "signature": "email|email address",
+    "key": "email"
+  },
+  {
+    "signature": "password|password",
+    "key": "password"
+  },
+  {
+    "signature": "tel|mobile phone",
+    "key": "phone"
+  },
+  {
+    "signature": "choice|state",
+    "key": "state"
+  },
+  {
+    "signature": "numeric|zip code",
+    "key": "postalCode"
+  },
+  {
+    "signature": "numeric|ssn last 4 digits",
+    "key": "ssnLast4"
+  }
+]

@@ -1,25 +1,28 @@
 import { Platform } from 'react-native';
+import bugs from './bugs.json';
 
 /**
- * Planted bugs. Turning one on makes PayDemo misbehave in a realistic way,
- * so the test suite can prove it catches it.
+ * Planted bugs (shared with the e2e bug-hunt). Turning one on makes PayDemo
+ * misbehave in a realistic way, so the test suite can prove it catches it.
  */
-export const BUGS = {
-  'email-validation': 'Sign-up accepts malformed email addresses',
-  'kyc-stuck': 'Identity verification never completes',
-  'expiry-check': 'Expired identity documents are accepted',
-  'limit-check': 'Daily send limit is enforced at $600 instead of $500',
-  'balance-update': 'Balance is not deducted after a payment',
-} as const;
+export const BUGS = bugs;
 
 export type BugId = keyof typeof BUGS;
 
 /** Test-data shortcuts, like seeding a DB before a UI test. */
 export type Seed = 'verified-user' | 'unverified-user' | null;
 
+/**
+ * Simulated UI changes between releases:
+ *  - 'form'    → the US sign-up form gains/renames fields (drift detection)
+ *  - 'testids' → some testIDs are renamed (self-healing locators)
+ */
+export type Drift = 'form' | 'testids';
+
 export interface LaunchParams {
   bugs: BugId[];
   seed: Seed;
+  drift: Drift[];
 }
 
 /**
@@ -29,7 +32,7 @@ export interface LaunchParams {
  */
 export function readLaunchParams(): LaunchParams {
   if (Platform.OS !== 'web' || typeof window === 'undefined') {
-    return { bugs: [], seed: null };
+    return { bugs: [], seed: null, drift: [] };
   }
   const q = new URLSearchParams(window.location.search);
   const bugs = (q.get('bugs') ?? '')
@@ -39,5 +42,9 @@ export function readLaunchParams(): LaunchParams {
   const seedParam = q.get('seed');
   const seed: Seed =
     seedParam === 'verified-user' || seedParam === 'unverified-user' ? seedParam : null;
-  return { bugs, seed };
+  const drift = (q.get('drift') ?? '')
+    .split(',')
+    .map((d) => d.trim())
+    .filter((d): d is Drift => d === 'form' || d === 'testids');
+  return { bugs, seed, drift };
 }

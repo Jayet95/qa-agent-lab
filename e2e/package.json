@@ -9,7 +9,9 @@
     "test:smoke": "cucumber-js --tags @smoke",
     "kpi": "tsx scripts/kpi.ts",
     "bug-hunt": "tsx scripts/bug-hunt.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "catalog": "tsx scripts/catalog.ts",
+    "test:dynamic": "cucumber-js --tags @dynamic"
   },
   "devDependencies": {
     "@cucumber/cucumber": "^13.3.0",

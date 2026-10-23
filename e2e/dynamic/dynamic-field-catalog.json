@@ -1,0 +1,314 @@
+{
+  "version": 1,
+  "entries": {
+    "choice|state": {
+      "key": "state",
+      "learnedFrom": "fuzzy",
+      "confidence": 1,
+      "markets": [
+        "us"
+      ],
+      "hits": 2,
+      "firstSeen": "2026-10-23T04:31:38.822Z",
+      "lastSeen": "2026-10-23T04:31:41.436Z"
+    },
+    "email|e-mail": {
+      "key": "email",
+      "learnedFrom": "fuzzy",
+      "confidence": 1,
+      "markets": [
+        "il"
+      ],
+      "hits": 1,
+      "firstSeen": "2026-10-23T04:31:38.819Z",
+      "lastSeen": "2026-10-23T04:31:38.819Z"
+    },
+    "email|e-mail-adresse": {
+      "key": "email",
+      "learnedFrom": "fuzzy",
+      "confidence": 1,
+      "markets": [
+        "de"
+      ],
+      "hits": 3,
+      "firstSeen": "2026-10-23T04:31:40.177Z",
+      "lastSeen": "2026-10-23T04:31:41.404Z"
+    },
+    "email|email": {
+      "key": "email",
+      "learnedFrom": "fuzzy",
+      "confidence": 1,
+      "markets": [
+        "uk"
+      ],
+      "hits": 1,
+      "firstSeen": "2026-10-23T04:31:40.094Z",
+      "lastSeen": "2026-10-23T04:31:40.094Z"
+    },
+    "email|email address": {
+      "key": "email",
+      "learnedFrom": "fuzzy",
+      "confidence": 1,
+      "markets": [
+        "us"
+      ],
+      "hits": 2,
+      "firstSeen": "2026-10-23T04:31:38.820Z",
+      "lastSeen": "2026-10-23T04:31:41.436Z"
+    },
+    "numeric|postal zip code": {
+      "key": "postalCode",
+      "learnedFrom": "fuzzy",
+      "confidence": 0.83,
+      "markets": [
+        "us"
+      ],
+      "hits": 1,
+      "firstSeen": "2026-10-23T04:31:41.437Z",
+      "lastSeen": "2026-10-23T04:31:41.437Z"
+    },
+    "numeric|postleitzahl": {
+      "key": "postalCode",
+      "learnedFrom": "fuzzy",
+      "confidence": 1,
+      "markets": [
+        "de"
+      ],
+      "hits": 3,
+      "firstSeen": "2026-10-23T04:31:40.178Z",
+      "lastSeen": "2026-10-23T04:31:41.404Z"
+    },
+    "numeric|ssn last 4 digits": {
+      "key": "ssnLast4",
+      "learnedFrom": "semantic",
+      "confidence": 0.8,
+      "markets": [
+        "us"
+      ],
+      "hits": 2,
+      "firstSeen": "2026-10-23T04:31:38.823Z",
+      "lastSeen": "2026-10-23T04:31:41.437Z"
+    },
+    "numeric|steuer-id 11 ziffern": {
+      "key": "taxId",
+      "learnedFrom": "semantic",
+      "confidence": 0.8,
+      "markets": [
+        "de"
+      ],
+      "hits": 3,
+      "firstSeen": "2026-10-23T04:31:40.178Z",
+      "lastSeen": "2026-10-23T04:31:41.404Z"
+    },
+    "numeric|teudat zehut id number": {
+      "key": "nationalId",
+      "learnedFrom": "semantic",
+      "confidence": 0.8,
+      "markets": [
+        "il"
+      ],
+      "hits": 1,
+      "firstSeen": "2026-10-23T04:31:38.820Z",
+      "lastSeen": "2026-10-23T04:31:38.820Z"
+    },
+    "numeric|zip code": {
+      "key": "postalCode",
+      "learnedFrom": "fuzzy",
+      "confidence": 1,
+      "markets": [
+        "us"
+      ],
+      "hits": 1,
+      "firstSeen": "2026-10-23T04:31:38.822Z",
+      "lastSeen": "2026-10-23T04:31:38.822Z"
+    },
+    "password|create a password": {
+      "key": "password",
+      "learnedFrom": "fuzzy",
+      "confidence": 1,
+      "markets": [
+        "uk"
+      ],
+      "hits": 1,
+      "firstSeen": "2026-10-23T04:31:40.095Z",
+      "lastSeen": "2026-10-23T04:31:40.095Z"
+    },
+    "password|password": {
+      "key": "password",
+      "learnedFrom": "fuzzy",
+      "confidence": 1,
+      "markets": [
+        "il",
+        "us"
+      ],
+      "hits": 3,
+      "firstSeen": "2026-10-23T04:31:38.821Z",
+      "lastSeen": "2026-10-23T04:31:41.436Z"
+    },
+    "password|passwort": {
+      "key": "password",
+      "learnedFrom": "fuzzy",
+      "confidence": 1,
+      "markets": [
+        "de"
+      ],
+      "hits": 3,
+      "firstSeen": "2026-10-23T04:31:40.178Z",
+      "lastSeen": "2026-10-23T04:31:41.404Z"
+    },
+    "tel|mobile number": {
+      "key": "phone",
+      "learnedFrom": "fuzzy",
+      "confidence": 1,
+      "markets": [
+        "uk"
+      ],
+      "hits": 1,
+      "firstSeen": "2026-10-23T04:31:40.096Z",
+      "lastSeen": "2026-10-23T04:31:40.096Z"
+    },
+    "tel|mobile phone": {
+      "key": "phone",
+      "learnedFrom": "fuzzy",
+      "confidence": 1,
+      "markets": [
+        "us"
+      ],
+      "hits": 2,
+      "firstSeen": "2026-10-23T04:31:38.821Z",
+      "lastSeen": "2026-10-23T04:31:41.436Z"
+    },
+    "tel|phone": {
+      "key": "phone",
+      "learnedFrom": "fuzzy",
+      "confidence": 1,
+      "markets": [
+        "il"
+      ],
+      "hits": 1,
+      "firstSeen": "2026-10-23T04:31:38.820Z",
+      "lastSeen": "2026-10-23T04:31:38.820Z"
+    },
+    "text|city": {
+      "key": "city",
+      "learnedFrom": "fuzzy",
+      "confidence": 1,
+      "markets": [
+        "il"
+      ],
+      "hits": 1,
+      "firstSeen": "2026-10-23T04:31:38.820Z",
+      "lastSeen": "2026-10-23T04:31:38.820Z"
+    },
+    "text|date of birth": {
+      "key": "dateOfBirth",
+      "learnedFrom": "fuzzy",
+      "confidence": 1,
+      "markets": [
+        "uk"
+      ],
+      "hits": 1,
+      "firstSeen": "2026-10-23T04:31:40.095Z",
+      "lastSeen": "2026-10-23T04:31:40.095Z"
+    },
+    "text|first name": {
+      "key": "firstName",
+      "learnedFrom": "fuzzy",
+      "confidence": 1,
+      "markets": [
+        "us"
+      ],
+      "hits": 2,
+      "firstSeen": "2026-10-23T04:31:38.819Z",
+      "lastSeen": "2026-10-23T04:31:41.436Z"
+    },
+    "text|full name": {
+      "key": "fullName",
+      "learnedFrom": "fuzzy",
+      "confidence": 1,
+      "markets": [
+        "il"
+      ],
+      "hits": 1,
+      "firstSeen": "2026-10-23T04:31:38.818Z",
+      "lastSeen": "2026-10-23T04:31:38.818Z"
+    },
+    "text|geburtsdatum": {
+      "key": "dateOfBirth",
+      "learnedFrom": "fuzzy",
+      "confidence": 1,
+      "markets": [
+        "de"
+      ],
+      "hits": 3,
+      "firstSeen": "2026-10-23T04:31:40.178Z",
+      "lastSeen": "2026-10-23T04:31:41.404Z"
+    },
+    "text|last name": {
+      "key": "lastName",
+      "learnedFrom": "fuzzy",
+      "confidence": 1,
+      "markets": [
+        "us"
+      ],
+      "hits": 2,
+      "firstSeen": "2026-10-23T04:31:38.820Z",
+      "lastSeen": "2026-10-23T04:31:41.436Z"
+    },
+    "text|nachname": {
+      "key": "lastName",
+      "learnedFrom": "fuzzy",
+      "confidence": 1,
+      "markets": [
+        "de"
+      ],
+      "hits": 3,
+      "firstSeen": "2026-10-23T04:31:40.177Z",
+      "lastSeen": "2026-10-23T04:31:41.404Z"
+    },
+    "text|postcode": {
+      "key": "postalCode",
+      "learnedFrom": "fuzzy",
+      "confidence": 1,
+      "markets": [
+        "uk"
+      ],
+      "hits": 1,
+      "firstSeen": "2026-10-23T04:31:40.096Z",
+      "lastSeen": "2026-10-23T04:31:40.096Z"
+    },
+    "text|referral code": {
+      "key": "referralCode",
+      "learnedFrom": "fuzzy",
+      "confidence": 1,
+      "markets": [
+        "us"
+      ],
+      "hits": 1,
+      "firstSeen": "2026-10-23T04:31:41.437Z",
+      "lastSeen": "2026-10-23T04:31:41.437Z"
+    },
+    "text|vorname": {
+      "key": "firstName",
+      "learnedFrom": "fuzzy",
+      "confidence": 1,
+      "markets": [
+        "de"
+      ],
+      "hits": 3,
+      "firstSeen": "2026-10-23T04:31:40.177Z",
+      "lastSeen": "2026-10-23T04:31:41.404Z"
+    },
+    "text|your full name": {
+      "key": "fullName",
+      "learnedFrom": "fuzzy",
+      "confidence": 1,
+      "markets": [
+        "uk"
+      ],
+      "hits": 1,
+      "firstSeen": "2026-10-23T04:31:40.094Z",
+      "lastSeen": "2026-10-23T04:31:40.094Z"
+    }
+  }
+}

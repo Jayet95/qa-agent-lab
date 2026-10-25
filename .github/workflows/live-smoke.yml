@@ -53,6 +53,36 @@ jobs:
           if [ "${{ github.event_name }}" = "workflow_run" ]; then sleep 150; fi
           npx --prefix e2e wait-on "$BASE_URL" --timeout 120000
 
+      # Every public link a visitor can click from the Lab, PayDemo and the
+      # portfolio. The dashboard only warns: it's optional (GitHub Pages).
+      - name: Check public links
+        env:
+          LAB_URL: ${{ vars.LAB_URL || 'https://qa-agent-lab-live.jayet95.workers.dev' }}
+        run: |
+          LAB_URL="${LAB_URL%/}"; APP="${BASE_URL%/}"; FAIL=0
+          check() { # check <must|optional> <url> [text the page must contain]
+            body=$(curl -sL -m 20 -w '\n%{http_code}' "$2"); code=${body##*$'\n'}
+            if [[ "$code" =~ ^2 ]] && { [ -z "$3" ] || grep -q "$3" <<<"$body"; }; then
+              echo "✅ $code $2"; echo "- ✅ $2" >> "$GITHUB_STEP_SUMMARY"
+            elif [ "$1" = optional ]; then
+              echo "::warning title=Link not live yet::$code $2"; echo "- ⚠️ $code $2 (optional)" >> "$GITHUB_STEP_SUMMARY"
+            else
+              echo "::error title=Broken link::$code $2 ${3:+(expected \"$3\")}"; echo "- ❌ $code $2" >> "$GITHUB_STEP_SUMMARY"; FAIL=1
+            fi
+          }
+          echo "### Public links" >> "$GITHUB_STEP_SUMMARY"
+          check must "$LAB_URL/" "Run my test suite"
+          check must "$LAB_URL/api/config" '"configured":true'
+          check must "$LAB_URL/api/runs" '"recent"'
+          check must "$APP/" "<div id=\"root\""
+          check must "$APP/signup?market=de" "<div id=\"root\""
+          check must "$APP/wallet?seed=verified-user&bugs=limit-check" "<div id=\"root\""
+          check must "https://github.com/Jayet95/qa-agent-lab"
+          check must "https://codespaces.new/Jayet95/qa-agent-lab?quickstart=1"
+          check must "https://yakov-cv.pages.dev/"
+          check optional "https://jayet95.github.io/qa-agent-lab/"
+          exit $FAIL
+
       - name: Smoke test the live site
         working-directory: e2e
         run: |

@@ -10,3 +10,7 @@ site/
 !.env.example
 .DS_Store
 .wrangler/
+
+# Local Worker secrets (wrangler dev)
+.dev.vars
+.dev.vars.*

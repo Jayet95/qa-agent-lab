@@ -292,7 +292,9 @@
     $('run').disabled = !cfg.configured;
     if (!cfg.configured) {
       $('setup-note').hidden = false;
-      $('setup-note').innerHTML = `<b>Runs are switched off while the lab is being set up.</b> Still missing: ${(cfg.missing || []).map(esc).join(', ')}.`;
+      $('setup-note').innerHTML = /^(localhost|127\.0\.0\.1)$/.test(location.hostname)
+        ? `<b>Local preview: cloud runs are off here.</b> Runs report back to the deployed lab, so use that one. Missing locally: ${(cfg.missing || []).map(esc).join(', ')}.`
+        : `<b>Runs are switched off while the lab is being set up.</b> Still missing: ${(cfg.missing || []).map(esc).join(', ')}.`;
     }
     loadRecent();
     const shared = new URLSearchParams(location.search).get('run');

@@ -14,6 +14,7 @@ module.exports = {
       `html:${out}/cucumber-report.html`,
       `json:${out}/cucumber-report.json`,
       `message:${out}/messages.ndjson`,
+      `junit:${out}/junit.xml`,
     ],
     formatOptions: { snippetInterface: 'async-await' },
     retry,

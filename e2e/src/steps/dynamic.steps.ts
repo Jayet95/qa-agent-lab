@@ -28,6 +28,7 @@ Given('I open sign-up for the {string} market', async function (this: PayDemoWor
 
 Given('the {string} sign-up form has changed in a new release', async function (this: PayDemoWorld, market: string) {
   this.data.market = market;
+  this.data.variant = 'changed';
   await this.app.open(`/signup?market=${market}`, undefined, { drift: 'form' });
 });
 
@@ -35,8 +36,11 @@ When('the dynamic DOM reader completes the form', async function (this: PayDemoW
   await record(this, await new DynamicForm(this.page, workerCatalog, this.data.market as string).run());
 });
 
-When(/^the dynamic DOM reader inspects the form(?: again)?$/, async function (this: PayDemoWorld) {
-  await record(this, await new DynamicForm(this.page, workerCatalog, this.data.market as string).inspect());
+When(/^the dynamic DOM reader inspects the form( again)?$/, async function (this: PayDemoWorld, again?: string) {
+  const run = await new DynamicForm(this.page, workerCatalog, this.data.market as string).inspect();
+  // Inspection runs get their own report names so they never overwrite a market's main report.
+  run.variant = [this.data.variant as string | undefined, again ? 'pass-2' : 'inspect'].filter(Boolean).join('-');
+  await record(this, run);
 });
 
 Then('registration is accepted', async function (this: PayDemoWorld) {

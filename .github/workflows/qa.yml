@@ -1,0 +1,118 @@
+name: QA
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: qa-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  e2e:
+    name: BDD suite · KPIs · bug hunt
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            app/package-lock.json
+            e2e/package-lock.json
+
+      - name: Build PayDemo for web
+        working-directory: app
+        run: |
+          npm ci
+          npx tsc --noEmit
+          npx expo export --platform web
+
+      - name: Install test dependencies
+        working-directory: e2e
+        run: |
+          npm ci
+          npx tsc --noEmit
+          npx playwright install --with-deps chromium
+
+      - name: Serve PayDemo
+        working-directory: e2e
+        run: |
+          npm run serve > serve.log 2>&1 &
+          npx wait-on http://localhost:8081 --timeout 60000
+
+      - name: Run BDD suite
+        working-directory: e2e
+        run: npx cucumber-js
+
+      - name: Quality KPIs
+        if: always()
+        working-directory: e2e
+        run: npm run kpi
+
+      - name: Bug hunt (plant each bug, measure detection)
+        if: success()
+        working-directory: e2e
+        run: npm run bug-hunt
+
+      - name: Dynamic reader — catalog status
+        if: always()
+        working-directory: e2e
+        run: npm run catalog -- report
+
+      - name: Build quality dashboard
+        if: always()
+        working-directory: e2e
+        run: npm run site
+
+      - name: Job summary
+        if: always()
+        working-directory: e2e
+        run: |
+          node -e '
+            const k = require("./reports/kpi.json");
+            let b = null; try { b = require("./reports/bug-hunt.json"); } catch {}
+            const t = k.totals;
+            console.log(`## ${t.failed ? "❌" : "✅"} ${t.passed}/${t.total} scenarios passed (${k.passRate}%)`);
+            console.log(`Flaky: ${t.flaky} · Bug detection: ${b ? `${b.caught}/${b.total} (${b.detectionRate}%)` : "n/a"}`);
+            console.log("\n| Feature | Passed | Failed |\n|---|---|---|");
+            for (const f of k.byFeature) console.log(`| ${f.name} | ${f.passed} | ${f.failed} |`);
+          ' >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qa-reports
+          path: |
+            e2e/reports
+            site
+          retention-days: 14
+
+      - name: Package dashboard for Pages
+        if: always() && github.ref == 'refs/heads/master' && vars.PUBLISH_DASHBOARD == 'true'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  # Enable by setting the repo variable PUBLISH_DASHBOARD=true
+  # (Settings → Pages → Source: GitHub Actions; needs a public repo on the free plan).
+  dashboard:
+    name: Publish dashboard
+    needs: e2e
+    if: always() && github.ref == 'refs/heads/master' && vars.PUBLISH_DASHBOARD == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - id: deploy
+        uses: actions/deploy-pages@v4

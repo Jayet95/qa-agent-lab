@@ -1,0 +1,88 @@
+# Azure DevOps equivalent of .github/workflows/qa.yml
+trigger:
+  branches:
+    include: [master]
+
+pr:
+  branches:
+    include: ['*']
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  BASE_URL: http://localhost:8081
+  npm_config_cache: $(Pipeline.Workspace)/.npm
+
+steps:
+  - task: NodeTool@0
+    inputs:
+      versionSpec: '22.x'
+    displayName: Use Node 22
+
+  - task: Cache@2
+    inputs:
+      key: 'npm | "$(Agent.OS)" | app/package-lock.json | e2e/package-lock.json'
+      path: $(npm_config_cache)
+    displayName: Cache npm
+
+  - script: |
+      npm ci
+      npx tsc --noEmit
+      npx expo export --platform web
+    workingDirectory: app
+    displayName: Build PayDemo for web
+
+  - script: |
+      npm ci
+      npx tsc --noEmit
+      npx playwright install --with-deps chromium
+    workingDirectory: e2e
+    displayName: Install test dependencies
+
+  - script: |
+      nohup npm run serve > serve.log 2>&1 &
+      npx wait-on $(BASE_URL) --timeout 60000
+    workingDirectory: e2e
+    displayName: Serve PayDemo
+
+  - script: npx cucumber-js
+    workingDirectory: e2e
+    displayName: Run BDD suite
+
+  - task: PublishTestResults@2
+    condition: always()
+    inputs:
+      testResultsFormat: JUnit
+      testResultsFiles: e2e/reports/junit.xml
+      testRunTitle: PayDemo BDD suite
+    displayName: Publish test results
+
+  - script: npm run kpi
+    condition: always()
+    workingDirectory: e2e
+    displayName: Quality KPIs
+
+  - script: npm run bug-hunt
+    condition: succeeded()
+    workingDirectory: e2e
+    displayName: Bug hunt (plant each bug, measure detection)
+
+  - script: npm run site
+    condition: always()
+    workingDirectory: e2e
+    displayName: Build quality dashboard
+
+  - task: PublishPipelineArtifact@1
+    condition: always()
+    inputs:
+      targetPath: site
+      artifact: quality-dashboard
+    displayName: Publish dashboard
+
+  - task: PublishPipelineArtifact@1
+    condition: always()
+    inputs:
+      targetPath: e2e/reports
+      artifact: qa-reports
+    displayName: Publish raw reports

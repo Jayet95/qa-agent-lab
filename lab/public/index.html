@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>QA Agent Lab — Live</title>
+<title>QA Agent Lab · Live</title>
 <meta name="description" content="Run Yakov Yahav Eliyahu's Cucumber + Playwright test suite yourself: pick scenarios, plant a bug, watch it get caught." />
 <style>
   :root {
@@ -54,11 +54,12 @@
   .opt:has(input:checked) { border-color: var(--brand); background: var(--brand-soft); }
   .bugs { display: grid; gap: 6px; }
   .bugs .opt { padding: 8px 12px; }
-  .bugs code { font-size: 13px; }
+  .bugs code { display: block; font-size: 13px; }
   button { font: inherit; cursor: pointer; }
   .run-btn { width: 100%; margin-top: 16px; padding: 13px; border: 0; border-radius: 12px; font-weight: 800; font-size: 16px; color: #fff;
              background: linear-gradient(135deg, #7c3aed, #2563eb); box-shadow: 0 6px 22px rgba(124,58,237,.35); }
   .run-btn:disabled { opacity: .5; cursor: not-allowed; box-shadow: none; }
+  .setup-note { margin-top: 10px; padding: 10px 12px; border-radius: 10px; font-size: 13px; background: var(--brand-soft); color: var(--ink-2); }
   .note { color: var(--muted); font-size: 13px; margin-top: 8px; }
   .phases { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin: 14px 0 6px; }
   .phase { text-align: center; font-size: 12px; color: var(--muted); }
@@ -127,6 +128,7 @@
         <div class="step-label">2 · Plant a bug? (optional)</div>
         <div class="bugs" id="bugs"></div>
         <button class="run-btn" id="run" disabled>Run in the cloud</button>
+        <div class="setup-note" id="setup-note" hidden></div>
         <div class="note">Runs on GitHub Actions. A fresh machine needs about 1–2 minutes to start and build the app; then the scenarios stream in live.</div>
       </div>
 
@@ -205,7 +207,7 @@
       const { id } = await api('/api/run', { method: 'POST', body: JSON.stringify({ preset, bug }) });
       watch(id);
     } catch (e) {
-      if (e.body?.activeId) { toast('Someone else is running the suite right now — watching their run.'); watch(e.body.activeId); }
+      if (e.body?.activeId) { toast('Someone else is running the suite right now. Watching their run.'); watch(e.body.activeId); }
       else { toast(e.message); $('run').disabled = false; }
     }
   };
@@ -288,7 +290,10 @@
     if (cfg.dashboardUrl) { $('dash-link').href = cfg.dashboardUrl; $('dash-link').hidden = false; }
     renderPlan();
     $('run').disabled = !cfg.configured;
-    if (!cfg.configured) toast('The live lab is being set up — runs are not available yet.');
+    if (!cfg.configured) {
+      $('setup-note').hidden = false;
+      $('setup-note').innerHTML = `<b>Runs are switched off while the lab is being set up.</b> Still missing: ${(cfg.missing || []).map(esc).join(', ')}.`;
+    }
     loadRecent();
     const shared = new URLSearchParams(location.search).get('run');
     if (shared) return watch(shared);

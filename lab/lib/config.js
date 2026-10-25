@@ -1,5 +1,5 @@
 // What a visitor may choose. The lab-run workflow re-validates both lists,
-// and maps presets to tag expressions itself — free text never reaches CI.
+// and maps presets to tag expressions itself; free text never reaches CI.
 export const PRESETS = {
   smoke: { label: 'Smoke', detail: '4 scenarios · the release gate', tag: '@smoke' },
   critical: { label: 'Critical', detail: '20 scenarios · money & identity', tag: '@critical' },

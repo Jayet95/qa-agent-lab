@@ -1,6 +1,6 @@
 // Run state lives in Cloudflare D1 (binding LAB_DB). D1 has a single primary,
 // so a snapshot posted from a GitHub runner is immediately visible to a
-// viewer anywhere — KV's eventual consistency would make "live" lag.
+// viewer anywhere. KV's eventual consistency would make "live" lag.
 
 let schemaReady = false;
 

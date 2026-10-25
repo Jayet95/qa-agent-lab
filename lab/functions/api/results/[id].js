@@ -9,7 +9,7 @@ function safeEqual(a, b) {
   return diff === 0;
 }
 
-// POST /api/results/:id — progress pushed from the GitHub Actions run.
+// POST /api/results/:id: progress pushed from the GitHub Actions run.
 export async function onRequestPost({ request, params, env }) {
   const id = String(params.id);
   if (!RUN_ID.test(id) || !env.LAB_DB) return json({ error: 'Not found' }, 404);
@@ -20,7 +20,7 @@ export async function onRequestPost({ request, params, env }) {
   if (!PHASES.includes(body.phase)) return json({ error: 'Unknown phase' }, 400);
 
   const now = Date.now();
-  // A run dispatched straight from GitHub's UI has no record yet — create one.
+  // A run dispatched straight from GitHub's UI has no record yet, so create one.
   const run = (await getRun(env.LAB_DB, id)) ?? { id, preset: 'manual', bug: 'none', phase: 'queued', phaseAt: {}, createdAt: now, scenarios: [], summary: null };
 
   // Runs started from GitHub's UI (not this page) learn what they're running

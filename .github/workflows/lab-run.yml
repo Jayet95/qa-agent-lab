@@ -49,11 +49,30 @@ jobs:
           case "$PRESET" in smoke|critical|payments|markets|all) ;; *) echo "bad preset"; exit 1;; esac
           case "$BUG" in none|email-validation|kyc-stuck|expiry-check|limit-check|balance-update) ;; *) echo "bad bug"; exit 1;; esac
 
-      - name: Report phase — starting
+      # The first report doubles as a connection check: if the Lab can't hear
+      # us, fail now with the reason instead of running tests nobody sees.
+      - name: Connect to the Lab (report phase "starting")
         run: |
-          [ -n "$LAB_URL" ] && curl -s -m 10 -X POST "$LAB_URL/api/results/$RUN_ID" \
+          if [ -z "$LAB_URL" ]; then
+            echo "::error title=LAB_URL not set::Add the repository variable LAB_URL (Settings → Secrets and variables → Actions → Variables), e.g. https://qa-agent-lab-live.<account>.workers.dev"
+            exit 1
+          fi
+          if [ -z "$LAB_RESULTS_SECRET" ]; then
+            echo "::error title=LAB_RESULTS_SECRET not set::Add the repository secret LAB_RESULTS_SECRET (same value as the Worker's secret)."
+            exit 1
+          fi
+          LAB_URL="${LAB_URL%/}"
+          echo "LAB_URL=$LAB_URL" >> "$GITHUB_ENV"
+          CODE=$(curl -s -m 15 -o response.txt -w '%{http_code}' -X POST "$LAB_URL/api/results/$RUN_ID" \
             -H "content-type: application/json" -H "x-lab-secret: $LAB_RESULTS_SECRET" \
-            -d "{\"phase\":\"setup\",\"preset\":\"$PRESET\",\"bug\":\"$BUG\",\"ghRunUrl\":\"$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID\"}" || true
+            -d "{\"phase\":\"setup\",\"preset\":\"$PRESET\",\"bug\":\"$BUG\",\"ghRunUrl\":\"$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID\"}" || true)
+          echo "Lab answered HTTP $CODE: $(head -c 200 response.txt 2>/dev/null)"
+          case "$CODE" in
+            2??) ;;
+            403) echo "::error title=Secret mismatch::The Lab rejected LAB_RESULTS_SECRET. The GitHub secret and the Cloudflare Worker secret must be the same string."; exit 1;;
+            000) echo "::error title=Lab unreachable::Could not reach $LAB_URL. Check the LAB_URL variable (full https:// URL of the Lab Worker)."; exit 1;;
+            *)   echo "::error title=Lab error::$LAB_URL/api/results answered HTTP $CODE. Check LAB_URL points at the Lab Worker, not PayDemo."; exit 1;;
+          esac
 
       - uses: actions/checkout@v4
 
@@ -71,7 +90,7 @@ jobs:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ hashFiles('e2e/package-lock.json') }}
 
-      - name: Report phase — building
+      - name: Report phase "building"
         run: |
           [ -n "$LAB_URL" ] && curl -s -m 10 -X POST "$LAB_URL/api/results/$RUN_ID" \
             -H "content-type: application/json" -H "x-lab-secret: $LAB_RESULTS_SECRET" -d '{"phase":"building"}' || true

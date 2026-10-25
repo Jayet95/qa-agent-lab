@@ -21,8 +21,11 @@ export async function onRequestGet({ params, env }) {
       run.ghRunUrl ??= gh.url;
       run.ghStatus = gh.status;
       if (gh.status === 'completed' && !TERMINAL.has(run.phase)) {
+        // Still "queued" means not one report arrived: the run couldn't reach us.
+        run.error = run.phase === 'queued'
+          ? "The cloud run couldn't report back to this page. Check the GitHub repo's LAB_URL variable and LAB_RESULTS_SECRET (the GitHub run names the exact problem)."
+          : 'The cloud run ended without reporting results. See the GitHub run.';
         run.phase = 'error';
-        run.error = 'The cloud run ended without reporting results. See the GitHub run.';
         run.phaseAt = { ...run.phaseAt, error: Date.now() };
       }
     } else if (Date.now() - run.createdAt > QUEUE_TIMEOUT_MS) {

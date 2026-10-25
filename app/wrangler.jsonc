@@ -1,0 +1,13 @@
+// Cloudflare Workers deployment for PayDemo (static web build).
+// Cloudflare settings: Root directory "app", Build command
+// "npm ci && npx expo export --platform web", Deploy command "npx wrangler deploy".
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "paydemo",
+  "compatibility_date": "2025-09-01",
+  "assets": {
+    "directory": "./dist",
+    // Client-side routes (/signup, /wallet, ...) are served index.html.
+    "not_found_handling": "single-page-application"
+  }
+}

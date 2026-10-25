@@ -14,9 +14,9 @@
   "d1_databases": [
     {
       "binding": "LAB_DB",
-      "database_name": "qa-lab",
-      // Set from the D1 database you create (not a secret).
-      "database_id": "00000000-0000-0000-0000-000000000000"
+      // No database_id: `wrangler deploy` finds the "qa-lab" database by name,
+      // or creates it on the first deploy (automatic provisioning).
+      "database_name": "qa-lab"
     }
   ],
   "vars": {

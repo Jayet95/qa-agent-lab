@@ -66,10 +66,11 @@ Cloudflare dashboard → **Workers & Pages** → **Create** → **Import a repos
 
 Result: `https://paydemo.<account>.workers.dev`. Deep links (`/wallet`) work via single-page-app fallback.
 
-### 4. Create the database
+### 4. The database
 
-**Storage & Databases** → **D1 SQL Database** → **Create** → name `qa-lab`.
-Copy its **Database ID** into `lab/wrangler.jsonc` (`database_id`) and push. It is an identifier, not a secret. Tables are created automatically on first use.
+Nothing to do: `lab/wrangler.jsonc` names a D1 database `qa-lab` without an ID,
+so the first `wrangler deploy` creates it (or reuses one with that name).
+Tables are created automatically on first use.
 
 ### 5. Deploy the Live Lab (Cloudflare Worker)
 
@@ -82,7 +83,10 @@ Copy its **Database ID** into `lab/wrangler.jsonc` (`database_id`) and push. It 
 | Build command | *(empty)* |
 | Deploy command | `npx wrangler deploy` |
 
-After the first deploy, open the Worker → **Settings** → **Variables and secrets** → add two of type **Secret**:
+After the first deploy, check the build log shows `env.LAB_DB` and `env.ASSETS`
+(if Cloudflare says *"Variables cannot be added to a Worker that only has static
+assets"*, the deploy didn't use `lab/wrangler.jsonc`: check the root directory is
+`lab` and the deploy command is `npx wrangler deploy`, then retry the build). Then open the Worker → **Settings** → **Variables and secrets** → add two of type **Secret**:
 
 | Name | Value |
 |---|---|

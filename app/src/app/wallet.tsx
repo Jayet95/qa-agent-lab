@@ -26,7 +26,14 @@ export default function Wallet() {
         </View>
       </View>
 
-      <Button testID="wallet-send" label="Send money" onPress={() => router.push('/send')} />
+      <View style={s.actions}>
+        <View style={{ flex: 1 }}>
+          <Button testID="wallet-send" label="Send money" onPress={() => router.push('/send')} />
+        </View>
+        <View style={{ flex: 1 }}>
+          <Button testID="wallet-deposit" label="Add money" variant="ghost" onPress={() => router.push('/deposit')} />
+        </View>
+      </View>
 
       <Text style={s.section}>Recent activity</Text>
       <Card testID="wallet-transactions">
@@ -35,8 +42,12 @@ export default function Wallet() {
         ) : (
           transactions.map((t, i) => (
             <View key={t.id} style={[s.tx, i > 0 && s.txBorder]} testID={`wallet-tx-${i}`}>
-              <Text style={{ color: colors.ink, flex: 1 }} numberOfLines={1}>To {t.to}</Text>
-              <Text style={{ color: colors.danger, fontWeight: '700' }}>−{formatMoney(t.amount)}</Text>
+              <Text style={{ color: colors.ink, flex: 1 }} numberOfLines={1}>
+                {t.kind === 'deposit' ? 'Added to wallet' : `To ${t.to}`}
+              </Text>
+              <Text style={{ color: t.kind === 'deposit' ? colors.success : colors.danger, fontWeight: '700' }}>
+                {t.kind === 'deposit' ? '+' : '−'}{formatMoney(t.amount)}
+              </Text>
             </View>
           ))
         )}
@@ -55,6 +66,7 @@ const s = StyleSheet.create({
   badgeOk: { backgroundColor: '#D1FAE5', color: '#065F46' },
   badgeWarn: { backgroundColor: '#FEF3C7', color: '#92400E' },
   limit: { color: '#DDD6FE', fontSize: 13 },
+  actions: { flexDirection: 'row', gap: 10 },
   section: { fontSize: 16, fontWeight: '700', color: colors.ink, marginTop: 22, marginBottom: 10 },
   tx: { flexDirection: 'row', paddingVertical: 10 },
   txBorder: { borderTopWidth: 1, borderTopColor: colors.border },

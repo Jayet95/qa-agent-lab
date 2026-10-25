@@ -1,11 +1,11 @@
 // What a visitor may choose. The lab-run workflow re-validates both lists,
 // and maps presets to tag expressions itself; free text never reaches CI.
 export const PRESETS = {
-  smoke: { label: 'Smoke', detail: '4 scenarios · the release gate', tag: '@smoke' },
-  critical: { label: 'Critical', detail: '20 scenarios · money & identity', tag: '@critical' },
-  payments: { label: 'Payments', detail: '11 scenarios · limits & balances', tag: '@payments' },
+  smoke: { label: 'Smoke', detail: '5 scenarios · the release gate', tag: '@smoke' },
+  critical: { label: 'Critical', detail: '27 scenarios · money & identity', tag: '@critical' },
+  payments: { label: 'Payments', detail: '18 scenarios · limits, balances, validation', tag: '@payments' },
   markets: { label: 'Dynamic markets', detail: '6 scenarios · US/IL/UK/DE, no selectors', tag: '@dynamic' },
-  all: { label: 'Everything', detail: '38 scenarios', tag: '' },
+  all: { label: 'Everything', detail: '53 scenarios', tag: '' },
 };
 
 // Mirrors app/src/lib/bugs.json (kept in sync by hand; CI validates the ids).

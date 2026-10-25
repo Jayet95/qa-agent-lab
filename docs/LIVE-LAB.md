@@ -101,7 +101,7 @@ GitHub repo → **Settings** → **Secrets and variables** → **Actions**
 ### 7. Try it
 
 Open the Lab URL → choose **Critical** → plant **`limit-check`** → **Run in the cloud**.
-After ~1–2 minutes of setup you should watch 20 scenarios stream in and
+After ~1–2 minutes of setup you should watch 27 scenarios stream in and
 see **"🐞 Caught it! … 3 scenarios fail"**.
 
 ---

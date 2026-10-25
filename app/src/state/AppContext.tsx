@@ -3,6 +3,7 @@ import { readLaunchParams, type BugId, type Drift } from '../lib/launchParams';
 
 export const STARTING_BALANCE = 1000;
 export const DAILY_LIMIT = 500;
+export const MAX_DEPOSIT = 5000;
 
 export interface User {
   name: string;
@@ -11,7 +12,9 @@ export interface User {
 
 export interface Transaction {
   id: string;
-  to: string;
+  kind: 'payment' | 'deposit';
+  /** Recipient email (payments only). */
+  to?: string;
   amount: number;
 }
 
@@ -20,12 +23,15 @@ interface AppState {
   verified: boolean;
   balance: number;
   sentToday: number;
+  /** What can be sent right now: the lower of balance and today's remaining limit. */
+  canSendNow: number;
   transactions: Transaction[];
   bugs: BugId[];
   toast: string | null;
   signUp: (user: User) => void;
   markVerified: () => void;
   recordPayment: (to: string, amount: number) => void;
+  recordDeposit: (amount: number) => void;
   showToast: (message: string) => void;
   hasBug: (bug: BugId) => boolean;
   hasDrift: (drift: Drift) => boolean;
@@ -57,16 +63,23 @@ export function AppProvider({ children }: { children: ReactNode }) {
     (to: string, amount: number) => {
       if (!hasBug('balance-update')) setBalance((b) => b - amount);
       setSentToday((s) => s + amount);
-      setTransactions((t) => [{ id: String(Date.now()), to, amount }, ...t]);
+      setTransactions((t) => [{ id: String(Date.now()), kind: 'payment', to, amount }, ...t]);
     },
     [hasBug],
   );
+
+  // Deposits raise the balance but never touch the daily send limit.
+  const recordDeposit = useCallback((amount: number) => {
+    setBalance((b) => b + amount);
+    setTransactions((t) => [{ id: String(Date.now()), kind: 'deposit', amount }, ...t]);
+  }, []);
 
   const value: AppState = {
     user,
     verified,
     balance,
     sentToday,
+    canSendNow: Math.max(0, Math.min(balance, DAILY_LIMIT - sentToday)),
     transactions,
     bugs: launch.bugs,
     toast,
@@ -76,6 +89,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     },
     markVerified: () => setVerified(true),
     recordPayment,
+    recordDeposit,
     showToast,
     hasBug,
     hasDrift: (d) => launch.drift.includes(d),

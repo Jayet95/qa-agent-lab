@@ -1,5 +1,5 @@
 import { expect } from '../support/expect';
-import type { DocumentType, SendPage, SignUpPage, VerifyPage, WalletPage, WelcomePage } from './pages';
+import type { DepositPage, DocumentType, SendPage, SignUpPage, VerifyPage, WalletPage, WelcomePage } from './pages';
 
 export interface NewCustomer {
   name: string;
@@ -75,5 +75,29 @@ export class PaymentFlow {
   async send(to: string, amount: string) {
     await this.attemptSend(to, amount);
     await expect(this.wallet.balance, 'should return to the wallet after paying').toBeVisible();
+  }
+}
+
+export class DepositFlow {
+  constructor(
+    private readonly wallet: WalletPage,
+    private readonly depositPage: DepositPage,
+  ) {}
+
+  async open() {
+    await this.wallet.deposit.click();
+    await expect(this.depositPage.amount).toBeVisible();
+  }
+
+  async attemptDeposit(amount: string) {
+    await this.open();
+    await this.depositPage.amount.fill(amount);
+    await this.depositPage.submit.click();
+  }
+
+  /** Deposits and waits until we're back on the wallet. */
+  async deposit(amount: string) {
+    await this.attemptDeposit(amount);
+    await expect(this.wallet.balance, 'should return to the wallet after a deposit').toBeVisible();
   }
 }

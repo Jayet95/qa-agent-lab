@@ -47,6 +47,7 @@ export default function RootLayout() {
           <Stack.Screen name="verify" options={{ title: 'Verify identity' }} />
           <Stack.Screen name="wallet" options={{ title: 'Wallet', headerBackVisible: false }} />
           <Stack.Screen name="send" options={{ title: 'Send money' }} />
+          <Stack.Screen name="deposit" options={{ title: 'Add money' }} />
         </Stack>
         <Toast />
       </AppProvider>

@@ -15,8 +15,8 @@ with numbers rather than opinions.
 
 | | |
 |---|---|
-| **PayDemo** (`app/`) | A small fintech app in **React Native (Expo SDK 58)** that runs on web, Android and iOS: sign-up per market (US/IL/UK/DE), document **OCR** review, identity verification, payments with a **$500 daily limit** |
-| **BDD suite** (`e2e/`) | **Cucumber/Gherkin + Playwright + TypeScript** — 38 scenarios / 251 steps, layered features → steps → flows → page objects |
+| **PayDemo** (`app/`) | A small fintech app in **React Native (Expo SDK 58)** that runs on web, Android and iOS: sign-up per market (US/IL/UK/DE), document **OCR** review, identity verification, deposits, and payments with a **$500 daily limit** and strict amount validation |
+| **BDD suite** (`e2e/`) | **Cucumber/Gherkin + Playwright + TypeScript** — 53 scenarios / 343 steps, layered features → steps → flows → page objects |
 | **Dynamic DOM reader** | Fills registration forms it has never seen: reads the live DOM, resolves each field via **catalog → fuzzy → semantic map → type**, learns into a catalog, reports drift |
 | **Smart find** | Finds elements from plain descriptions ("Create account button") and **self-heals** renamed test IDs, reporting what to fix |
 | **Testing HUD** | Overlay in the headed browser: pause / step / inspect / stop a run at any time |
@@ -38,7 +38,7 @@ cd ../e2e && npm ci && npx playwright install chromium
 
 # 3. Serve PayDemo (SPA mode) and run everything
 npm run serve &            # http://localhost:8081
-npx cucumber-js            # 38 scenarios
+npx cucumber-js            # 53 scenarios
 ```
 
 ### Ways to run

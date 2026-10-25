@@ -1,7 +1,7 @@
 import type { Page } from '@playwright/test';
 import type { HealingEvent } from '../dynamic/smartFind';
-import { OnboardingFlow, PaymentFlow } from './flows';
-import { Chrome, SendPage, SignUpPage, VerifyPage, WalletPage, WelcomePage } from './pages';
+import { DepositFlow, OnboardingFlow, PaymentFlow } from './flows';
+import { Chrome, DepositPage, SendPage, SignUpPage, VerifyPage, WalletPage, WelcomePage } from './pages';
 
 export type Seed = 'verified-user' | 'unverified-user';
 
@@ -12,9 +12,11 @@ export class PayDemo {
   readonly verify: VerifyPage;
   readonly wallet: WalletPage;
   readonly send: SendPage;
+  readonly depositPage: DepositPage;
   readonly chrome: Chrome;
   readonly onboarding: OnboardingFlow;
   readonly payments: PaymentFlow;
+  readonly deposits: DepositFlow;
   /** Locators healed by smart find during this scenario. */
   readonly healing: HealingEvent[] = [];
   /** UI-drift switches applied to every page this scenario opens. */
@@ -30,9 +32,11 @@ export class PayDemo {
     this.verify = new VerifyPage(page, this.healing);
     this.wallet = new WalletPage(page, this.healing);
     this.send = new SendPage(page, this.healing);
+    this.depositPage = new DepositPage(page, this.healing);
     this.chrome = new Chrome(page, this.healing);
     this.onboarding = new OnboardingFlow(this.welcome, this.signUp, this.verify);
     this.payments = new PaymentFlow(this.wallet, this.send);
+    this.deposits = new DepositFlow(this.wallet, this.depositPage);
   }
 
   /**

@@ -90,6 +90,7 @@ export class WalletPage extends Screen {
   readonly verification = this.id('wallet-verification');
   readonly remainingLimit = this.id('wallet-limit');
   readonly send = this.id('wallet-send');
+  readonly deposit = this.id('wallet-deposit');
   readonly empty = this.id('wallet-empty');
 
   transaction(index: number): Locator {
@@ -102,6 +103,21 @@ export class SendPage extends Screen {
   readonly amount = this.id('send-amount');
   readonly submit = this.id('send-submit');
   readonly error = this.id('send-error');
+  /** Inline message under the amount field, shown while typing. */
+  readonly amountError = this.id('send-amount-error');
+  readonly available = this.id('send-available');
+  readonly max = this.id('send-max');
+}
+
+export class DepositPage extends Screen {
+  readonly amount = this.id('deposit-amount');
+  readonly submit = this.id('deposit-submit');
+  readonly error = this.id('deposit-error');
+  readonly amountError = this.id('deposit-amount-error');
+
+  quick(amount: number): Locator {
+    return this.id(`deposit-quick-${amount}`);
+  }
 }
 
 export class Chrome extends Screen {

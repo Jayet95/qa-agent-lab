@@ -11,7 +11,21 @@ export function passwordProblem(pw: string): string | null {
   return null;
 }
 
+/** Digits with an optional sign and decimal part; "$" and "," are allowed as formatting. */
+const AMOUNT_RE = /^-?\d+(\.\d*)?$/;
+const clean = (raw: string) => raw.replace(/[$,\s]/g, '');
+
+/** Returns null for anything that isn't a plain number ("abc", "12abc", "1e3", "#!"). */
 export function parseAmount(raw: string): number | null {
-  const n = Number(raw.replace(/[$,\s]/g, ''));
-  return Number.isFinite(n) ? Math.round(n * 100) / 100 : null;
+  const s = clean(raw);
+  return AMOUNT_RE.test(s) ? Math.round(Number(s) * 100) / 100 : null;
+}
+
+/** Problems with how an amount is written, before any business rule. */
+export function amountFormatProblem(raw: string): string | null {
+  const s = clean(raw);
+  if (s === '') return null;
+  if (!AMOUNT_RE.test(s)) return 'Enter a valid number, like 25 or 25.50';
+  if ((s.split('.')[1] ?? '').length > 2) return 'Use at most 2 decimal places';
+  return null;
 }

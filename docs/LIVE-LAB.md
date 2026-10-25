@@ -98,7 +98,16 @@ GitHub repo → **Settings** → **Secrets and variables** → **Actions**
 - **Secrets** → New repository secret → `LAB_RESULTS_SECRET` = the string from step 1
 - **Variables** → New repository variable → `LAB_URL` = the Lab URL from step 5
 
-### 7. Try it
+### 7. Publish the quality dashboard (GitHub Pages)
+
+PayDemo's "Behind the scenes" box and the Lab header link to it.
+
+- Repo **Settings** → **Pages** → **Source:** *GitHub Actions*
+- **Settings** → **Secrets and variables** → **Actions** → **Variables** → `PUBLISH_DASHBOARD` = `true`
+- Re-run the latest **QA** workflow on `master` (or push anything). The dashboard appears at
+  `https://jayet95.github.io/qa-agent-lab/` and refreshes on every green-or-red run.
+
+### 8. Try it
 
 Open the Lab URL → choose **Critical** → plant **`limit-check`** → **Run in the cloud**.
 After ~1–2 minutes of setup you should watch 27 scenarios stream in and

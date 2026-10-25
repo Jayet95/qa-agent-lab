@@ -1,4 +1,5 @@
 import { Redirect, router } from 'expo-router';
+import { QaLinks } from '../components/QaLinks';
 import { StyleSheet, Text, View } from 'react-native';
 import { Button, Card, colors, Screen } from '../components/ui';
 import { DAILY_LIMIT, formatMoney, useApp } from '../state/AppContext';
@@ -52,6 +53,7 @@ export default function Wallet() {
           ))
         )}
       </Card>
+      <QaLinks />
     </Screen>
   );
 }

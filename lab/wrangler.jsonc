@@ -21,7 +21,8 @@
   ],
   "vars": {
     "PAYDEMO_URL": "https://paydemo.jayet95.workers.dev",
-    "GITHUB_REPO": "Jayet95/qa-agent-lab"
+    "GITHUB_REPO": "Jayet95/qa-agent-lab",
+    "DASHBOARD_URL": "https://jayet95.github.io/qa-agent-lab/"
   },
   // Secrets added in the dashboard survive deploys; plain vars come from here.
   "keep_vars": true

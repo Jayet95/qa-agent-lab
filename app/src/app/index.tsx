@@ -1,4 +1,5 @@
 import { Redirect, router } from 'expo-router';
+import { QaLinks } from '../components/QaLinks';
 import { Pressable, Text, View } from 'react-native';
 import { Button, Card, colors, Screen, Title } from '../components/ui';
 import { MARKETS, type MarketId } from '../lib/markets';
@@ -11,7 +12,7 @@ export default function Welcome() {
 
   return (
     <Screen>
-      <Title sub="A tiny fintech app built to be tested — sign up, verify your identity, and send money.">
+      <Title sub="A tiny fintech app built to be tested: sign up, verify your identity, add and send money.">
         Welcome to PayDemo
       </Title>
       <Card>
@@ -45,6 +46,7 @@ export default function Welcome() {
           </Pressable>
         ))}
       </View>
+      <QaLinks />
     </Screen>
   );
 }

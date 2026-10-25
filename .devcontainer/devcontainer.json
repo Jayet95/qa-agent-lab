@@ -1,0 +1,31 @@
+{
+  "name": "QA Agent Lab",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:1-22-bookworm",
+  "features": {
+    // A lightweight desktop (noVNC on port 6080) so headed runs with the
+    // testing HUD are visible right in the browser.
+    "ghcr.io/devcontainers/features/desktop-lite:1": {}
+  },
+  "containerEnv": {
+    "DISPLAY": ":1"
+  },
+  "hostRequirements": {
+    "cpus": 4
+  },
+  "postCreateCommand": "bash .devcontainer/setup.sh",
+  "postStartCommand": "bash .devcontainer/start.sh",
+  "forwardPorts": [4000, 8081, 6080],
+  "portsAttributes": {
+    "4000": { "label": "Test Runner Console", "onAutoForward": "openBrowser" },
+    "8081": { "label": "PayDemo", "onAutoForward": "silent" },
+    "6080": { "label": "Desktop (headed runs + HUD, password: vscode)", "onAutoForward": "silent" }
+  },
+  "customizations": {
+    "codespaces": {
+      "openFiles": ["README.md", "e2e/features/payments.feature"]
+    },
+    "vscode": {
+      "extensions": ["CucumberOpen.cucumber-official", "ms-playwright.playwright"]
+    }
+  }
+}

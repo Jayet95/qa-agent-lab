@@ -40,6 +40,10 @@ jobs:
           npx tsc --noEmit
           npx playwright install --with-deps chromium
 
+      - name: Live Lab config in sync
+        working-directory: e2e
+        run: npx tsx scripts/check-lab-sync.ts
+
       - name: Serve PayDemo
         working-directory: e2e
         run: |

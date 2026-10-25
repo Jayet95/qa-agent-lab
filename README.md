@@ -1,5 +1,12 @@
 # 🧪 QA Agent Lab
 
+[![QA](https://github.com/Jayet95/qa-agent-lab/actions/workflows/qa.yml/badge.svg)](https://github.com/Jayet95/qa-agent-lab/actions/workflows/qa.yml)
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/Jayet95/qa-agent-lab?quickstart=1)
+
+> **Try it without installing anything**
+> - **Live Lab** — pick scenarios, plant a bug, press Run, and watch a cloud machine catch it (setup: [docs/LIVE-LAB.md](docs/LIVE-LAB.md))
+> - **Codespaces** — the whole project in your browser: the Test Runner Console opens automatically, and headed runs with the HUD appear on the built-in desktop
+
 An end-to-end, AI-assisted quality engineering lab, built from scratch by
 **Yakov Yahav Eliyahu**. It shows how I design test automation for a
 regulated fintech product: BDD that the whole team can read, automation that
@@ -16,6 +23,7 @@ with numbers rather than opinions.
 | **Test Runner Console** | Local dashboard to pick scenarios, plant bugs, run, and watch results live |
 | **Quality KPIs** | Pass rate, flakiness, durations, and a **bug hunt** that plants real bugs and measures how many the suite catches (currently **5/5**) |
 | **CI** | GitHub Actions + Azure Pipelines, publishing a quality dashboard |
+| **Live Lab** (`lab/`) | Public page on Cloudflare Pages (+ Functions, D1): visitors trigger a GitHub Actions run and watch results stream in |
 
 ---
 
@@ -137,7 +145,10 @@ e2e/
   console/                Test Runner Console (server + UI)
   dynamic/                learned catalog + drift baselines (committed)
 dashboard/                quality dashboard template
+lab/                      Live Lab: public page + Cloudflare Pages Functions (D1)
+.devcontainer/            Codespaces: one-click environment
 .github/workflows/qa.yml  CI (GitHub Actions)
+.github/workflows/lab-run.yml  on-demand runs for the Live Lab
 azure-pipelines.yml       CI (Azure DevOps)
 docs/ARCHITECTURE.md      how it fits together
 ```

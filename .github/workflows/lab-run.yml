@@ -1,0 +1,138 @@
+name: Lab run
+run-name: Lab run ${{ inputs.run_id }}
+
+# Triggered by the Live Lab page (Cloudflare Pages Function) so visitors can
+# run the suite — optionally against a build with a planted bug — and watch it.
+on:
+  workflow_dispatch:
+    inputs:
+      preset:
+        description: Which scenarios to run
+        type: choice
+        options: [smoke, critical, payments, markets, all]
+        default: smoke
+      bug:
+        description: Plant a bug in PayDemo first
+        type: choice
+        options: [none, email-validation, kyc-stuck, expiry-check, limit-check, balance-update]
+        default: none
+      run_id:
+        description: Live Lab run id
+        type: string
+        required: true
+
+# One lab run at a time; later ones wait their turn.
+concurrency:
+  group: lab-run
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  lab:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # Inputs reach scripts only through env vars (never interpolated into
+    # shell code) — standard protection against expression injection.
+    env:
+      RUN_ID: ${{ inputs.run_id }}
+      PRESET: ${{ inputs.preset }}
+      BUG: ${{ inputs.bug }}
+      LAB_URL: ${{ vars.LAB_URL }}
+      LAB_RUN_ID: ${{ inputs.run_id }}
+      LAB_RESULTS_SECRET: ${{ secrets.LAB_RESULTS_SECRET }}
+    steps:
+      - name: Validate inputs
+        run: |
+          [[ "$RUN_ID" =~ ^[a-z0-9-]{6,40}$ ]] || { echo "bad run_id"; exit 1; }
+          case "$PRESET" in smoke|critical|payments|markets|all) ;; *) echo "bad preset"; exit 1;; esac
+          case "$BUG" in none|email-validation|kyc-stuck|expiry-check|limit-check|balance-update) ;; *) echo "bad bug"; exit 1;; esac
+
+      - name: Report phase — starting
+        run: |
+          [ -n "$LAB_URL" ] && curl -s -m 10 -X POST "$LAB_URL/api/results/$RUN_ID" \
+            -H "content-type: application/json" -H "x-lab-secret: $LAB_RESULTS_SECRET" \
+            -d "{\"phase\":\"setup\",\"preset\":\"$PRESET\",\"bug\":\"$BUG\",\"ghRunUrl\":\"$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID\"}" || true
+
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            app/package-lock.json
+            e2e/package-lock.json
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('e2e/package-lock.json') }}
+
+      - name: Report phase — building
+        run: |
+          [ -n "$LAB_URL" ] && curl -s -m 10 -X POST "$LAB_URL/api/results/$RUN_ID" \
+            -H "content-type: application/json" -H "x-lab-secret: $LAB_RESULTS_SECRET" -d '{"phase":"building"}' || true
+
+      - name: Build PayDemo for web
+        working-directory: app
+        run: |
+          npm ci --no-audit --no-fund
+          npx expo export --platform web
+
+      - name: Install test dependencies
+        working-directory: e2e
+        run: |
+          npm ci --no-audit --no-fund
+          npx playwright install --with-deps chromium
+
+      - name: Serve PayDemo
+        working-directory: e2e
+        run: |
+          npm run serve > serve.log 2>&1 &
+          npx wait-on http://localhost:8081 --timeout 60000
+
+      - name: Run scenarios (streaming live)
+        id: run
+        working-directory: e2e
+        run: |
+          case "$PRESET" in
+            smoke) TAGS="@smoke" ;; critical) TAGS="@critical" ;; payments) TAGS="@payments" ;;
+            markets) TAGS="@dynamic" ;; all) TAGS="" ;;
+          esac
+          # @health asserts bug mode is off — it would "catch" any bug for free.
+          if [ "$BUG" != "none" ]; then
+            export BUGS="$BUG"
+            TAGS="${TAGS:+($TAGS) and }not @health"
+          fi
+          npx tsx scripts/lab-stream.ts watch &
+          WATCHER=$!
+          set +e
+          if [ -n "$TAGS" ]; then RETRY=0 LEARN=0 npx cucumber-js --tags "$TAGS"; else RETRY=0 LEARN=0 npx cucumber-js; fi
+          echo "exit=$?" >> "$GITHUB_OUTPUT"
+          # The final step posts the complete result; the live watcher can stop.
+          kill "$WATCHER" 2>/dev/null || true
+
+      - name: Report final result
+        if: always()
+        working-directory: e2e
+        env:
+          CUCUMBER_EXIT: ${{ steps.run.outputs.exit }}
+        run: npx tsx scripts/lab-stream.ts final || true
+
+      - name: Report error
+        if: failure()
+        run: |
+          [ -n "$LAB_URL" ] && curl -s -m 10 -X POST "$LAB_URL/api/results/$RUN_ID" \
+            -H "content-type: application/json" -H "x-lab-secret: $LAB_RESULTS_SECRET" \
+            -d '{"phase":"error","error":"The cloud run failed before the tests finished — see the GitHub run."}' || true
+
+      - name: Upload reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lab-run-${{ inputs.run_id }}
+          path: e2e/reports
+          retention-days: 7

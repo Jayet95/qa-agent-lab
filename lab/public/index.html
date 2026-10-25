@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>QA Agent Lab — Live</title>
+<meta name="description" content="Run Yakov Yahav Eliyahu's Cucumber + Playwright test suite yourself: pick scenarios, plant a bug, watch it get caught." />
+<style>
+  :root {
+    color-scheme: light;
+    --page: #f4f2fb; --surface: #ffffff; --surface-2: #f8f7fc; --ink: #1b1530; --ink-2: #5b5670; --muted: #8e89a3;
+    --line: #e6e2f2; --brand: #6d28d9; --brand-2: #2563eb; --brand-soft: #ede7fe;
+    --good: #0ca30c; --good-text: #006300; --good-soft: #e3f6e3; --critical: #d03b3b; --critical-soft: #fde8e8; --run: #2a78d6;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:where(:not([data-theme="light"])) {
+      color-scheme: dark;
+      --page: #0e0b1a; --surface: #17132a; --surface-2: #1d1834; --ink: #f3f0ff; --ink-2: #b8b2d3; --muted: #847e9e;
+      --line: #2c2645; --brand: #a78bfa; --brand-2: #60a5fa; --brand-soft: #2a2050; --good-text: #4ade80; --good-soft: #10291a;
+      --critical-soft: #2d1416; --run: #3987e5;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --page: #0e0b1a; --surface: #17132a; --surface-2: #1d1834; --ink: #f3f0ff; --ink-2: #b8b2d3; --muted: #847e9e;
+    --line: #2c2645; --brand: #a78bfa; --brand-2: #60a5fa; --brand-soft: #2a2050; --good-text: #4ade80; --good-soft: #10291a;
+    --critical-soft: #2d1416; --run: #3987e5;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--page); color: var(--ink); font: 15px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  a { color: var(--brand); }
+  .wrap { max-width: 1060px; margin: 0 auto; padding: 0 20px; }
+  header { border-bottom: 1px solid var(--line); background: var(--surface); }
+  header .wrap { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 18px; padding: 14px 20px; }
+  header .brand { font-weight: 800; flex: 1; min-width: 200px; }
+  header nav { display: flex; gap: 14px; flex-wrap: wrap; font-size: 14px; }
+  .hero { padding: 36px 0 18px; }
+  .hero h1 { font-size: clamp(26px, 4vw, 38px); line-height: 1.15; margin: 0 0 10px; }
+  .hero h1 span { background: linear-gradient(90deg, var(--brand), var(--brand-2)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .hero p { color: var(--ink-2); max-width: 720px; margin: 0; }
+  .grid { display: grid; grid-template-columns: 380px 1fr; gap: 18px; padding-bottom: 40px; }
+  @media (max-width: 920px) { .grid { grid-template-columns: 1fr; } }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 18px; }
+  .card + .card { margin-top: 16px; }
+  h2 { font-size: 16px; margin: 0 0 4px; }
+  .step-label { font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; margin: 18px 0 8px; }
+  .step-label:first-of-type { margin-top: 6px; }
+  .presets { display: grid; gap: 8px; }
+  .opt { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border: 1.5px solid var(--line); border-radius: 12px; cursor: pointer; background: var(--surface-2); }
+  .opt:hover { border-color: var(--brand); }
+  .opt input { margin-top: 4px; accent-color: var(--brand); }
+  .opt b { display: block; }
+  .opt small { color: var(--muted); }
+  .opt:has(input:checked) { border-color: var(--brand); background: var(--brand-soft); }
+  .bugs { display: grid; gap: 6px; }
+  .bugs .opt { padding: 8px 12px; }
+  .bugs code { font-size: 13px; }
+  button { font: inherit; cursor: pointer; }
+  .run-btn { width: 100%; margin-top: 16px; padding: 13px; border: 0; border-radius: 12px; font-weight: 800; font-size: 16px; color: #fff;
+             background: linear-gradient(135deg, #7c3aed, #2563eb); box-shadow: 0 6px 22px rgba(124,58,237,.35); }
+  .run-btn:disabled { opacity: .5; cursor: not-allowed; box-shadow: none; }
+  .note { color: var(--muted); font-size: 13px; margin-top: 8px; }
+  .phases { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin: 14px 0 6px; }
+  .phase { text-align: center; font-size: 12px; color: var(--muted); }
+  .phase i { display: block; height: 6px; border-radius: 999px; background: var(--surface-2); border: 1px solid var(--line); margin-bottom: 6px; }
+  .phase.done i { background: var(--good); border-color: var(--good); }
+  .phase.now i { background: var(--run); border-color: var(--run); animation: pulse 1.1s infinite; }
+  .phase.now { color: var(--ink); font-weight: 600; }
+  @keyframes pulse { 50% { opacity: .4; } }
+  .topline { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; }
+  .topline h2 { flex: 1; }
+  .elapsed { color: var(--muted); font-variant-numeric: tabular-nums; }
+  .verdict { border-radius: 12px; padding: 14px 16px; margin: 14px 0 4px; font-weight: 600; }
+  .verdict.good { background: var(--good-soft); color: var(--good-text); }
+  .verdict.bad { background: var(--critical-soft); color: var(--critical); }
+  .verdict.info { background: var(--brand-soft); color: var(--brand); }
+  .verdict small { display: block; font-weight: 400; color: var(--ink-2); margin-top: 4px; }
+  .counters { display: flex; gap: 16px; flex-wrap: wrap; color: var(--ink-2); margin: 10px 0; font-size: 14px; }
+  .counters b { color: var(--ink); font-variant-numeric: tabular-nums; }
+  .results { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+  .group { padding: 7px 12px; background: var(--surface-2); color: var(--ink-2); font-weight: 600; font-size: 12px; border-top: 1px solid var(--line); }
+  .group:first-child { border-top: 0; }
+  .res { display: grid; grid-template-columns: 22px 1fr auto; gap: 8px; padding: 7px 12px; border-top: 1px solid var(--line); font-size: 14px; align-items: center; }
+  .ico { font-weight: 800; text-align: center; }
+  .ico.passed { color: var(--good-text); } .ico.failed { color: var(--critical); } .ico.queued, .ico.skipped { color: var(--muted); }
+  .ico.running { color: var(--run); animation: pulse 1s infinite; }
+  .ms { color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+  .empty { color: var(--muted); text-align: center; padding: 28px 12px; }
+  .links { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 12px; font-size: 14px; }
+  .try { display: grid; gap: 8px; }
+  .try a { display: block; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--ink); background: var(--surface-2); }
+  .try a small { display: block; color: var(--muted); }
+  .recent { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .recent td { padding: 7px 4px; border-top: 1px solid var(--line); }
+  .ok { color: var(--good-text); font-weight: 600; } .no { color: var(--critical); font-weight: 600; }
+  footer { color: var(--muted); font-size: 13px; padding: 10px 0 40px; }
+  .toast { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%); background: var(--ink); color: var(--surface); padding: 10px 16px; border-radius: 10px; display: none; z-index: 9; max-width: 90vw; }
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="brand">🧪 QA Agent Lab · Live</div>
+    <nav>
+      <a id="repo-link" href="https://github.com/Jayet95/qa-agent-lab" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://codespaces.new/Jayet95/qa-agent-lab?quickstart=1" target="_blank" rel="noopener">Open in Codespaces</a>
+      <a id="dash-link" hidden target="_blank" rel="noopener">Quality dashboard</a>
+      <a href="https://yakov-cv.pages.dev/" target="_blank" rel="noopener">Yakov's portfolio</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="hero">
+    <h1>Run my test suite <span>yourself</span></h1>
+    <p>Pick what to test, optionally plant a bug in the app, and press Run. A fresh cloud machine builds
+      <b>PayDemo</b> (a React Native fintech app) and runs my <b>Cucumber + Playwright</b> suite against it.
+      You watch every scenario pass or fail live. If you planted a bug, red is good news: it means the tests caught it.</p>
+  </section>
+
+  <div class="grid">
+    <section>
+      <div class="card">
+        <h2>Plan the run</h2>
+        <div class="step-label">1 · What to test</div>
+        <div class="presets" id="presets"></div>
+        <div class="step-label">2 · Plant a bug? (optional)</div>
+        <div class="bugs" id="bugs"></div>
+        <button class="run-btn" id="run" disabled>Run in the cloud</button>
+        <div class="note">Runs on GitHub Actions. A fresh machine needs about 1–2 minutes to start and build the app; then the scenarios stream in live.</div>
+      </div>
+
+      <div class="card">
+        <h2>Try the app yourself</h2>
+        <div class="try" id="try"><div class="note">The PayDemo link appears here once it's deployed.</div></div>
+      </div>
+    </section>
+
+    <section>
+      <div class="card">
+        <div class="topline"><h2 id="live-title">Live run</h2><span class="elapsed" id="elapsed"></span></div>
+        <div class="phases" id="phases"></div>
+        <div id="verdict"></div>
+        <div class="counters" id="counters"></div>
+        <div class="results" id="results"><div class="empty">Choose a preset and press <b>Run in the cloud</b>.</div></div>
+        <div class="links" id="links"></div>
+      </div>
+
+      <div class="card">
+        <h2>Recent runs</h2>
+        <div id="recent"><div class="note">No runs yet.</div></div>
+      </div>
+    </section>
+  </div>
+
+  <footer>Built by Yakov Yahav Eliyahu. Source, architecture and CI are on <a href="https://github.com/Jayet95/qa-agent-lab">GitHub</a>.</footer>
+</main>
+<div class="toast" id="toast"></div>
+
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const fmt = (ms) => (ms == null ? '' : ms >= 60000 ? `${Math.floor(ms / 60000)}m ${Math.round((ms % 60000) / 1000)}s` : `${(ms / 1000).toFixed(1)}s`);
+  const toast = (m) => { const t = $('toast'); t.textContent = m; t.style.display = 'block'; clearTimeout(t._h); t._h = setTimeout(() => (t.style.display = 'none'), 5000); };
+  const api = async (path, opts = {}) => {
+    const r = await fetch(path, { headers: { 'content-type': 'application/json' }, ...opts });
+    const body = await r.json().catch(() => ({}));
+    if (!r.ok) { const e = new Error(body.error || r.statusText); e.body = body; throw e; }
+    return body;
+  };
+
+  const PHASES = [['queued', 'Queued'], ['setup', 'Machine starting'], ['building', 'Building app'], ['running', 'Running scenarios'], ['done', 'Done']];
+  let cfg = null;
+  let current = null; // run id being watched
+  let poll = null;
+  let run = null;
+
+  // ── Setup ────────────────────────────────────────────────────────────
+  function renderPlan() {
+    $('presets').innerHTML = Object.entries(cfg.presets).map(([id, p], i) =>
+      `<label class="opt"><input type="radio" name="preset" value="${id}" ${i === 1 ? 'checked' : ''}><span><b>${esc(p.label)}</b><small>${esc(p.detail)}</small></span></label>`).join('');
+    $('bugs').innerHTML = `<label class="opt"><input type="radio" name="bug" value="none" checked><span><b>No bug</b><small>Expect everything green</small></span></label>` +
+      Object.entries(cfg.bugs).map(([id, d]) => `<label class="opt"><input type="radio" name="bug" value="${id}"><span><code>${esc(id)}</code><small>${esc(d)}</small></span></label>`).join('');
+    document.querySelectorAll('input[name=bug]').forEach((i) => i.addEventListener('change', renderTry));
+    renderTry();
+  }
+
+  function renderTry() {
+    if (!cfg.paydemoUrl) return;
+    const bug = document.querySelector('input[name=bug]:checked')?.value ?? 'none';
+    const base = cfg.paydemoUrl.replace(/\/$/, '');
+    const links = [[`${base}/`, 'Open PayDemo', 'Sign up, verify an ID (with OCR review), send money']];
+    links.push([`${base}/signup?market=de`, 'German sign-up form', 'One of the four market forms the dynamic DOM reader fills']);
+    if (bug !== 'none') links.push([`${base}/wallet?seed=verified-user&bugs=${encodeURIComponent(bug)}`, `PayDemo with “${bug}” planted`, cfg.bugs[bug]]);
+    $('try').innerHTML = links.map(([href, t, s]) => `<a href="${href}" target="_blank" rel="noopener">${esc(t)} ↗<small>${esc(s)}</small></a>`).join('');
+  }
+
+  // ── Run ──────────────────────────────────────────────────────────────
+  $('run').onclick = async () => {
+    const preset = document.querySelector('input[name=preset]:checked').value;
+    const bug = document.querySelector('input[name=bug]:checked').value;
+    $('run').disabled = true;
+    try {
+      const { id } = await api('/api/run', { method: 'POST', body: JSON.stringify({ preset, bug }) });
+      watch(id);
+    } catch (e) {
+      if (e.body?.activeId) { toast('Someone else is running the suite right now — watching their run.'); watch(e.body.activeId); }
+      else { toast(e.message); $('run').disabled = false; }
+    }
+  };
+
+  function watch(id) {
+    current = id;
+    history.replaceState(null, '', `?run=${id}`);
+    clearInterval(poll);
+    const tick = async () => {
+      try { run = await api(`/api/runs/${id}`); render(); } catch (e) { toast(e.message); }
+      if (run && (run.phase === 'done' || run.phase === 'error')) { clearInterval(poll); loadRecent(); $('run').disabled = !cfg.configured; }
+    };
+    tick();
+    poll = setInterval(tick, 2000);
+    $('run').disabled = true;
+  }
+
+  function render() {
+    const preset = cfg.presets[run.preset]?.label ?? run.preset;
+    $('live-title').textContent = `Live run · ${preset}${run.bug && run.bug !== 'none' ? ` · bug: ${run.bug}` : ''}`;
+    const end = run.phase === 'done' || run.phase === 'error' ? run.updatedAt : Date.now();
+    $('elapsed').textContent = fmt(end - run.createdAt);
+
+    const idx = PHASES.findIndex(([p]) => p === run.phase);
+    $('phases').innerHTML = PHASES.map(([p, label], i) => {
+      const cls = run.phase === 'error' ? (i < Math.max(1, idx) ? 'done' : '') : i < idx || run.phase === 'done' ? 'done' : i === idx ? 'now' : '';
+      return `<div class="phase ${cls}"><i></i>${label}</div>`;
+    }).join('');
+
+    const s = run.summary;
+    const planted = run.bug && run.bug !== 'none';
+    let verdict = '';
+    if (run.phase === 'error') verdict = `<div class="verdict bad">Something went wrong<small>${esc(run.error || 'See the GitHub run for details.')}</small></div>`;
+    else if (run.phase === 'done' && s) {
+      if (planted && s.failed > 0) verdict = `<div class="verdict good">🐞 Caught it! Planting <code>${esc(run.bug)}</code> made ${s.failed} scenario${s.failed === 1 ? '' : 's'} fail.<small>That's the point of a test suite: the bug never reaches a customer. The red rows below show exactly which checks noticed.</small></div>`;
+      else if (planted) verdict = `<div class="verdict info">This preset didn't touch the bug.<small><code>${esc(run.bug)}</code> lives in a part of the app these ${s.total} scenarios don't cover. Try <b>Critical</b> or <b>Everything</b>: picking the right coverage for a change is half of QA.</small></div>`;
+      else if (s.failed === 0) verdict = `<div class="verdict good">✓ All ${s.total} scenarios passed.<small>Now try again with a bug planted.</small></div>`;
+      else verdict = `<div class="verdict bad">✗ ${s.failed} scenario${s.failed === 1 ? '' : 's'} failed with no bug planted.<small>That would be a real regression (or infrastructure noise). Open the GitHub run for screenshots and logs.</small></div>`;
+    } else if (run.phase === 'queued') verdict = `<div class="verdict info">Waiting for a GitHub machine…<small>Usually under a minute.</small></div>`;
+    $('verdict').innerHTML = verdict;
+
+    const list = run.scenarios || [];
+    $('counters').innerHTML = s ? `<span class="ok">✓ <b>${s.passed}</b> passed</span><span class="no">✗ <b>${s.failed}</b> failed</span><span>◐ <b>${s.running}</b> running</span><span>○ <b>${s.queued}</b> queued</span>` : '';
+    if (!list.length) {
+      $('results').innerHTML = `<div class="empty">${run.phase === 'running' ? 'Starting the first scenarios…' : run.phase === 'error' ? 'No scenario results.' : 'Scenarios will appear here once the app is built.'}</div>`;
+    } else {
+      const groups = {};
+      list.forEach((x) => (groups[x.feature] ??= []).push(x));
+      const ICON = { passed: '✓', failed: '✗', running: '◐', queued: '○', skipped: '↷' };
+      $('results').innerHTML = Object.entries(groups).map(([f, xs]) => `<div class="group">${esc(f)}</div>` + xs.map((x) =>
+        `<div class="res"><span class="ico ${x.status}">${ICON[x.status]}</span><span>${esc(x.name)}</span><span class="ms">${fmt(x.ms)}</span></div>`).join('')).join('');
+    }
+
+    $('links').innerHTML = [
+      run.ghRunUrl && `<a href="${esc(run.ghRunUrl)}" target="_blank" rel="noopener">GitHub run: logs, screenshots and HTML report ↗</a>`,
+      `<a href="?run=${esc(run.id)}">Share this run</a>`,
+    ].filter(Boolean).join('');
+  }
+
+  async function loadRecent() {
+    try {
+      const { recent } = await api('/api/runs');
+      if (!recent.length) return;
+      $('recent').innerHTML = `<table class="recent"><tbody>${recent.map((r) => {
+        const p = cfg.presets[r.preset]?.label ?? r.preset;
+        const planted = r.bug && r.bug !== 'none';
+        const res = r.phase === 'done' && r.summary
+          ? planted ? (r.summary.failed ? `<span class="ok">🐞 caught (${r.summary.failed} failed)</span>` : 'not covered')
+            : r.summary.failed ? `<span class="no">✗ ${r.summary.failed} failed</span>` : `<span class="ok">✓ ${r.summary.passed}/${r.summary.total}</span>`
+          : r.phase === 'error' ? '<span class="no">error</span>' : 'running…';
+        return `<tr><td>${new Date(r.createdAt).toLocaleString()}</td><td>${esc(p)}${planted ? ` · <code>${esc(r.bug)}</code>` : ''}</td><td>${res}</td><td><a href="?run=${esc(r.id)}">view</a></td></tr>`;
+      }).join('')}</tbody></table>`;
+    } catch { /* not configured yet */ }
+  }
+
+  // ── Boot ─────────────────────────────────────────────────────────────
+  (async () => {
+    cfg = await api('/api/config');
+    $('repo-link').href = cfg.repoUrl;
+    if (cfg.dashboardUrl) { $('dash-link').href = cfg.dashboardUrl; $('dash-link').hidden = false; }
+    renderPlan();
+    $('run').disabled = !cfg.configured;
+    if (!cfg.configured) toast('The live lab is being set up — runs are not available yet.');
+    loadRecent();
+    const shared = new URLSearchParams(location.search).get('run');
+    if (shared) return watch(shared);
+    const { active } = await api('/api/runs').catch(() => ({}));
+    if (active) watch(active);
+  })().catch((e) => toast(e.message));
+})();
+</script>
+</body>
+</html>

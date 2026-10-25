@@ -1,0 +1,11 @@
+{
+  "name": "qa-agent-lab-live",
+  "private": true,
+  "description": "Live Lab: Cloudflare Pages site + Functions that let visitors run the suite in GitHub Actions",
+  "scripts": {
+    "dev": "wrangler pages dev public --d1 LAB_DB=qa-lab-local --binding LAB_RESULTS_SECRET=local-dev-secret --binding PAYDEMO_URL=http://localhost:8081 --port 8788"
+  },
+  "devDependencies": {
+    "wrangler": "^4.152.0"
+  }
+}

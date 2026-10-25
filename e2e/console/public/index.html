@@ -1,0 +1,388 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>QA Agent Lab — Test Runner Console</title>
+<style>
+  :root {
+    color-scheme: light;
+    --page: #f4f2fb; --surface: #ffffff; --surface-2: #f8f7fc; --ink: #1b1530; --ink-2: #5b5670; --muted: #8e89a3;
+    --line: #e6e2f2; --brand: #6d28d9; --brand-soft: #ede7fe;
+    --good: #0ca30c; --good-text: #006300; --critical: #d03b3b; --warning: #fab219; --run: #2a78d6;
+    --mono: ui-monospace, "Cascadia Code", Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:where(:not([data-theme="light"])) {
+      color-scheme: dark;
+      --page: #0e0b1a; --surface: #17132a; --surface-2: #1d1834; --ink: #f3f0ff; --ink-2: #b8b2d3; --muted: #847e9e;
+      --line: #2c2645; --brand: #a78bfa; --brand-soft: #2a2050; --good-text: #4ade80; --run: #3987e5;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --page: #0e0b1a; --surface: #17132a; --surface-2: #1d1834; --ink: #f3f0ff; --ink-2: #b8b2d3; --muted: #847e9e;
+    --line: #2c2645; --brand: #a78bfa; --brand-soft: #2a2050; --good-text: #4ade80; --run: #3987e5;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--page); color: var(--ink); font: 14px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  header { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; padding: 14px 22px; border-bottom: 1px solid var(--line); background: var(--surface); position: sticky; top: 0; z-index: 5; }
+  header h1 { font-size: 17px; margin: 0; flex: 1; min-width: 240px; }
+  .pill { display: inline-flex; align-items: center; gap: 7px; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface-2); color: var(--ink-2); font-size: 13px; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); }
+  .dot.up { background: var(--good); } .dot.down { background: var(--critical); } .dot.busy { background: var(--run); animation: pulse 1s infinite; }
+  @keyframes pulse { 50% { opacity: .35; } }
+  a { color: var(--brand); }
+  main { display: grid; grid-template-columns: 400px 1fr; gap: 18px; padding: 18px 22px 40px; max-width: 1500px; margin: 0 auto; }
+  @media (max-width: 980px) { main { grid-template-columns: 1fr; } }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px; }
+  .card + .card { margin-top: 16px; }
+  h2 { font-size: 15px; margin: 0 0 12px; }
+  h3 { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 16px 0 8px; }
+  button { font: inherit; cursor: pointer; border-radius: 9px; border: 1px solid var(--line); background: var(--surface-2); color: var(--ink); padding: 6px 12px; }
+  button:hover:not(:disabled) { border-color: var(--brand); }
+  button:disabled { opacity: .5; cursor: not-allowed; }
+  button.primary { background: var(--brand); border-color: var(--brand); color: #fff; font-weight: 700; padding: 10px 14px; width: 100%; }
+  button.danger { background: var(--critical); border-color: var(--critical); color: #fff; font-weight: 700; }
+  .presets { display: flex; flex-wrap: wrap; gap: 6px; }
+  .presets button[aria-pressed="true"] { background: var(--brand-soft); border-color: var(--brand); color: var(--brand); font-weight: 600; }
+  input[type=search], input[type=text], select { font: inherit; width: 100%; padding: 7px 10px; border-radius: 9px; border: 1px solid var(--line); background: var(--surface-2); color: var(--ink); }
+  .features { max-height: 42vh; overflow: auto; border: 1px solid var(--line); border-radius: 10px; margin-top: 8px; }
+  details { border-bottom: 1px solid var(--line); }
+  details:last-child { border-bottom: 0; }
+  summary { display: flex; align-items: center; gap: 8px; padding: 8px 10px; cursor: pointer; list-style: none; }
+  summary::-webkit-details-marker { display: none; }
+  summary .count { margin-left: auto; color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+  summary .chev { color: var(--muted); transition: transform .15s; }
+  details[open] summary .chev { transform: rotate(90deg); }
+  .scn { display: flex; align-items: flex-start; gap: 8px; padding: 4px 10px 4px 34px; color: var(--ink-2); font-size: 13px; }
+  .scn .tags { color: var(--muted); font-size: 11px; }
+  label.opt { display: flex; align-items: center; gap: 8px; padding: 4px 0; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .bugs { display: grid; gap: 4px; }
+  .bugs label { display: flex; gap: 8px; align-items: flex-start; font-size: 13px; color: var(--ink-2); }
+  .bugs code { color: var(--ink); }
+  .hint { color: var(--muted); font-size: 12px; }
+  .runbar { margin-top: 14px; display: grid; gap: 8px; }
+  .run-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; }
+  .run-head .cmd { font-family: var(--mono); font-size: 12px; color: var(--ink-2); flex: 1 1 100%; overflow-wrap: anywhere; }
+  .counters { display: flex; gap: 14px; flex-wrap: wrap; color: var(--ink-2); }
+  .counters b { color: var(--ink); font-variant-numeric: tabular-nums; }
+  .progress { display: flex; gap: 2px; height: 10px; border-radius: 999px; overflow: hidden; background: var(--surface-2); margin: 12px 0; }
+  .progress i { display: block; height: 100%; transition: width .25s; }
+  .results { border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+  .group { padding: 7px 12px; background: var(--surface-2); color: var(--ink-2); font-weight: 600; font-size: 12px; border-top: 1px solid var(--line); }
+  .group:first-child { border-top: 0; }
+  .res { display: grid; grid-template-columns: 24px 1fr auto; gap: 8px; align-items: center; padding: 6px 12px; border-top: 1px solid var(--line); font-size: 13px; }
+  .res .ms { color: var(--muted); font-variant-numeric: tabular-nums; font-size: 12px; }
+  .ico { font-weight: 800; text-align: center; }
+  .ico.passed { color: var(--good-text); } .ico.failed { color: var(--critical); } .ico.queued, .ico.skipped { color: var(--muted); }
+  .ico.running { color: var(--run); animation: pulse 1s infinite; }
+  .badge { font-size: 11px; padding: 1px 6px; border-radius: 999px; background: var(--brand-soft); color: var(--brand); margin-left: 6px; }
+  .log { margin-top: 12px; }
+  .log pre { margin: 0; max-height: 260px; overflow: auto; font: 12px/1.45 var(--mono); background: #0f0c1d; color: #d9d4f0; padding: 10px 12px; border-radius: 10px; white-space: pre-wrap; }
+  .empty { color: var(--muted); padding: 22px; text-align: center; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { text-align: left; padding: 8px; border-bottom: 1px solid var(--line); }
+  th { color: var(--muted); font-weight: 600; font-size: 12px; }
+  td.num { font-variant-numeric: tabular-nums; }
+  .ok { color: var(--good-text); font-weight: 600; } .bad { color: var(--critical); font-weight: 600; } .stopped { color: var(--muted); font-weight: 600; }
+  .toast { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%); background: var(--ink); color: var(--surface); padding: 10px 16px; border-radius: 10px; display: none; z-index: 9; }
+</style>
+</head>
+<body>
+<header>
+  <h1>🧪 QA Agent Lab — Test Runner Console</h1>
+  <span class="pill" id="app-pill"><i class="dot" id="app-dot"></i><span id="app-text">PayDemo…</span></span>
+  <button id="app-start" hidden>Start PayDemo</button>
+  <span class="pill"><i class="dot" id="run-dot"></i><span id="run-text">Idle</span></span>
+  <a href="/quality/" target="_blank" rel="noopener">Quality dashboard ↗</a>
+</header>
+
+<main>
+  <!-- ── Plan a run ─────────────────────────────────────────────────── -->
+  <section>
+    <div class="card">
+      <h2>Plan a run</h2>
+      <div class="presets" id="presets">
+        <button data-tag="@smoke">Smoke</button>
+        <button data-tag="@critical">Critical</button>
+        <button data-tag="@regression">Regression</button>
+        <button data-tag="*">Everything</button>
+        <button data-tag="">None</button>
+      </div>
+
+      <h3>Features &amp; scenarios</h3>
+      <input type="search" id="search" placeholder="Filter scenarios…" />
+      <div class="features" id="features"><div class="empty">Loading scenarios…</div></div>
+
+      <h3>Or a tag expression</h3>
+      <input type="text" id="tags" placeholder='e.g. @payments and not @regression' />
+      <div class="hint">When set, the tag expression is used instead of the ticked scenarios.</div>
+
+      <h3>Options</h3>
+      <label class="opt"><input type="checkbox" id="headed" /> Headed browser with the testing HUD</label>
+      <label class="opt"><input type="checkbox" id="mobile" /> Mobile viewport (Pixel 7)</label>
+      <div class="grid2">
+        <label>Workers<select id="workers"><option>1</option><option selected>2</option><option>3</option><option>4</option></select></label>
+        <label>Retries<select id="retry"><option>0</option><option selected>1</option><option>2</option></select></label>
+      </div>
+
+      <h3>Plant bugs (bug mode)</h3>
+      <div class="bugs" id="bugs"></div>
+
+      <div class="runbar">
+        <button class="primary" id="run" disabled>Run</button>
+        <button id="bughunt">Run the bug hunt (plants each bug in turn)</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Live run + history ─────────────────────────────────────────── -->
+  <section>
+    <div class="card">
+      <div class="run-head">
+        <h2 style="margin:0;flex:1" id="live-title">Live run</h2>
+        <span class="hint" id="elapsed"></span>
+        <button class="danger" id="stop" hidden>⏹ Stop</button>
+        <a id="report" hidden target="_blank" rel="noopener">Open HTML report ↗</a>
+        <div class="cmd" id="cmd"></div>
+      </div>
+      <div class="progress" id="progress"></div>
+      <div class="counters" id="counters"></div>
+      <div class="results" id="results" style="margin-top:12px"><div class="empty">Pick something on the left and press Run.</div></div>
+      <details class="log" id="logbox"><summary>Console output</summary><pre id="log"></pre></details>
+    </div>
+
+    <div class="card">
+      <h2>Run history</h2>
+      <div id="history"><div class="empty">No runs yet.</div></div>
+    </div>
+  </section>
+</main>
+<div class="toast" id="toast"></div>
+
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const fmtMs = (ms) => (ms == null ? '' : ms >= 60000 ? `${(ms / 60000).toFixed(1)}m` : `${(ms / 1000).toFixed(1)}s`);
+  const api = async (path, opts = {}) => {
+    const r = await fetch(path, { headers: { 'content-type': 'application/json' }, ...opts });
+    const body = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(body.error || r.statusText);
+    return body;
+  };
+  const toast = (msg) => { const t = $('toast'); t.textContent = msg; t.style.display = 'block'; clearTimeout(t._h); t._h = setTimeout(() => (t.style.display = 'none'), 4000); };
+
+  let features = [];
+  const selected = new Set();
+  let live = null; // { id, scenarios: {}, startedAt }
+  let source = null;
+  let tick = null;
+
+  // ── Status ───────────────────────────────────────────────────────────
+  async function refreshStatus() {
+    const s = await api('/api/status');
+    $('app-dot').className = `dot ${s.app.up ? 'up' : 'down'}`;
+    $('app-text').textContent = s.app.up ? `PayDemo up · ${s.app.url}` : s.app.built ? 'PayDemo is not running' : 'PayDemo not built';
+    $('app-start').hidden = s.app.up || !s.app.built;
+    $('run-dot').className = `dot ${s.run ? 'busy' : ''}`;
+    $('run-text').textContent = s.run ? `Running ${s.run.kind}` : 'Idle';
+    if (s.run && (!live || live.id !== s.run.id)) attach(s.run.id);
+    updateRunButton();
+    return s;
+  }
+  $('app-start').onclick = async () => {
+    $('app-start').disabled = true; $('app-text').textContent = 'Starting PayDemo…';
+    try { await api('/api/app/start', { method: 'POST' }); } catch (e) { toast(e.message); }
+    $('app-start').disabled = false; refreshStatus();
+  };
+
+  // ── Scenario picker ──────────────────────────────────────────────────
+  function renderFeatures() {
+    const q = $('search').value.trim().toLowerCase();
+    $('features').innerHTML = features.map((f, fi) => {
+      const scs = f.scenarios.filter((s) => !q || s.name.toLowerCase().includes(q) || s.tags.join(' ').includes(q));
+      if (!scs.length) return '';
+      const sel = f.scenarios.filter((s) => selected.has(s.name)).length;
+      return `<details ${q ? 'open' : ''}><summary>
+          <span class="chev">▸</span>
+          <input type="checkbox" data-feature="${fi}" ${sel === f.scenarios.length ? 'checked' : ''} ${sel && sel < f.scenarios.length ? 'data-partial' : ''} aria-label="Select ${esc(f.name)}" onclick="event.stopPropagation()">
+          <span>${esc(f.name)}</span><span class="count">${sel}/${f.scenarios.length}</span></summary>
+        ${scs.map((s) => `<label class="scn"><input type="checkbox" data-scenario="${esc(s.name)}" ${selected.has(s.name) ? 'checked' : ''}>
+          <span>${esc(s.name)}<br><span class="tags">${esc(s.tags.join(' '))}</span></span></label>`).join('')}
+      </details>`;
+    }).join('') || '<div class="empty">No scenarios match.</div>';
+    document.querySelectorAll('[data-partial]').forEach((el) => (el.indeterminate = true));
+    updateRunButton();
+  }
+  $('features').addEventListener('change', (e) => {
+    const el = e.target;
+    if (el.dataset.feature != null) {
+      const f = features[Number(el.dataset.feature)];
+      f.scenarios.forEach((s) => (el.checked ? selected.add(s.name) : selected.delete(s.name)));
+    } else if (el.dataset.scenario != null) {
+      el.checked ? selected.add(el.dataset.scenario) : selected.delete(el.dataset.scenario);
+    }
+    markPreset(null);
+    renderFeatures();
+  });
+  $('search').addEventListener('input', renderFeatures);
+
+  function markPreset(tag) {
+    document.querySelectorAll('#presets button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.tag === tag)));
+  }
+  $('presets').addEventListener('click', (e) => {
+    const tag = e.target.dataset?.tag;
+    if (tag == null) return;
+    selected.clear();
+    for (const f of features) for (const s of f.scenarios) if (tag === '*' || (tag && s.tags.includes(tag))) selected.add(s.name);
+    markPreset(tag);
+    renderFeatures();
+  });
+  $('tags').addEventListener('input', updateRunButton);
+
+  function totalScenarios() { return features.reduce((n, f) => n + f.scenarios.length, 0); }
+  function updateRunButton() {
+    const busy = !!(live && !live.done);
+    const tags = $('tags').value.trim();
+    const n = selected.size;
+    $('run').disabled = busy || (!tags && n === 0);
+    $('run').textContent = busy ? 'Running…' : tags ? `Run tag expression` : n === totalScenarios() ? `Run all ${n} scenarios` : `Run ${n} scenario${n === 1 ? '' : 's'}`;
+    $('bughunt').disabled = busy;
+  }
+  $('headed').addEventListener('change', () => { $('workers').disabled = $('headed').checked; });
+
+  // ── Start / stop ─────────────────────────────────────────────────────
+  function options() {
+    const tags = $('tags').value.trim();
+    const all = selected.size === totalScenarios();
+    return {
+      kind: 'suite',
+      tags: tags || undefined,
+      names: tags || all ? undefined : [...selected],
+      headed: $('headed').checked,
+      mobile: $('mobile').checked,
+      workers: Number($('workers').value),
+      retry: Number($('retry').value),
+      bugs: [...document.querySelectorAll('#bugs input:checked')].map((i) => i.value),
+    };
+  }
+  async function start(opts) {
+    try {
+      const { id } = await api('/api/runs', { method: 'POST', body: JSON.stringify(opts) });
+      attach(id);
+      refreshStatus();
+    } catch (e) { toast(e.message); }
+  }
+  $('run').onclick = () => start(options());
+  $('bughunt').onclick = () => start({ kind: 'bug-hunt' });
+  $('stop').onclick = async () => { if (live) await api(`/api/runs/${live.id}/stop`, { method: 'POST' }); };
+
+  // ── Live run ─────────────────────────────────────────────────────────
+  function attach(id) {
+    source?.close();
+    live = { id, scenarios: {}, done: false, startedAt: Date.now() };
+    $('log').textContent = '';
+    $('report').hidden = true;
+    $('stop').hidden = false;
+    $('live-title').textContent = `Live run · ${id}`;
+    renderLive();
+    clearInterval(tick);
+    tick = setInterval(() => { if (!live.done) $('elapsed').textContent = fmtMs(Date.now() - live.startedAt); }, 500);
+    source = new EventSource(`/api/runs/${id}/events`);
+    source.onmessage = (e) => {
+      const ev = JSON.parse(e.data);
+      if (ev.type === 'snapshot') {
+        live.scenarios = ev.run.scenarios; live.startedAt = Date.parse(ev.run.startedAt); live.kind = ev.run.kind;
+        $('cmd').textContent = ev.run.command;
+        $('log').textContent = ev.run.log.join('\n');
+        if (ev.run.state !== 'running') finish({ ...ev.run, report: null });
+      } else if (ev.type === 'scenario') {
+        live.scenarios[ev.id] = ev;
+      } else if (ev.type === 'log') {
+        const pre = $('log');
+        pre.textContent += (pre.textContent ? '\n' : '') + ev.line;
+        pre.scrollTop = pre.scrollHeight;
+        if (/Error|✗|NOT caught/.test(ev.line)) $('logbox').open = true;
+      } else if (ev.type === 'done') {
+        finish(ev.run);
+      }
+      renderLive();
+    };
+    source.onerror = () => source.close();
+    updateRunButton();
+  }
+
+  function finish(run) {
+    live.done = true;
+    source?.close();
+    clearInterval(tick);
+    $('stop').hidden = true;
+    if (run.finishedAt) $('elapsed').textContent = fmtMs(Date.parse(run.finishedAt) - Date.parse(run.startedAt));
+    if (run.report) { $('report').href = run.report; $('report').hidden = false; }
+    if (live.kind === 'bug-hunt' || run.kind === 'bug-hunt') $('logbox').open = true;
+    refreshStatus(); loadHistory(); updateRunButton();
+  }
+
+  function renderLive() {
+    const list = Object.values(live?.scenarios ?? {});
+    const c = { passed: 0, failed: 0, running: 0, queued: 0, skipped: 0 };
+    list.forEach((s) => c[s.status]++);
+    const total = list.length || 1;
+    $('progress').innerHTML = list.length
+      ? `<i style="width:${(c.passed / total) * 100}%;background:var(--good)"></i><i style="width:${(c.failed / total) * 100}%;background:var(--critical)"></i><i style="width:${(c.running / total) * 100}%;background:var(--run)"></i>`
+      : '';
+    $('counters').innerHTML = list.length
+      ? `<span class="ok">✓ <b>${c.passed}</b> passed</span><span class="bad">✗ <b>${c.failed}</b> failed</span><span>◐ <b>${c.running}</b> running</span><span>○ <b>${c.queued}</b> queued</span>${c.skipped ? `<span>↷ <b>${c.skipped}</b> skipped</span>` : ''}`
+      : '';
+    if (!list.length) {
+      $('results').innerHTML = `<div class="empty">${live ? (live.kind === 'bug-hunt' ? 'Bug hunt running — see console output below.' : 'Starting…') : 'Pick something on the left and press Run.'}</div>`;
+      if (live?.kind === 'bug-hunt') $('logbox').open = true;
+      return;
+    }
+    const groups = {};
+    list.forEach((s) => (groups[s.feature] ??= []).push(s));
+    const ICON = { passed: '✓', failed: '✗', running: '◐', queued: '○', skipped: '↷' };
+    $('results').innerHTML = Object.entries(groups).map(([f, ss]) => `<div class="group">${esc(f)}</div>` + ss.map((s) =>
+      `<div class="res"><span class="ico ${s.status}" title="${s.status}">${ICON[s.status]}</span>
+        <span>${esc(s.name)}${s.attempts > 1 ? `<span class="badge">retried ×${s.attempts - 1}</span>` : ''}</span>
+        <span class="ms">${fmtMs(s.ms)}</span></div>`).join('')).join('');
+  }
+
+  // ── History ──────────────────────────────────────────────────────────
+  async function loadHistory() {
+    const runs = await api('/api/runs');
+    if (!runs.length) return;
+    $('history').innerHTML = `<table><thead><tr><th>Started</th><th>Scope</th><th>Result</th><th>Time</th><th></th></tr></thead><tbody>${runs.map((r) => {
+      const s = r.summary || {};
+      const scope = r.kind === 'bug-hunt' ? 'Bug hunt' : r.options.tags ? r.options.tags : r.options.names ? `${r.options.names.length} scenario(s)` : 'All scenarios';
+      const extras = [r.options.headed && 'headed', r.options.mobile && 'mobile', r.options.bugs?.length && `bugs: ${r.options.bugs.join(', ')}`].filter(Boolean).join(' · ');
+      const result = r.state === 'stopped' ? '<span class="stopped">⏹ Stopped</span>'
+        : r.kind === 'bug-hunt' ? (r.exitCode === 0 ? '<span class="ok">✓ All bugs caught</span>' : '<span class="bad">✗ Some bugs missed</span>')
+        : s.failed ? `<span class="bad">✗ ${s.failed} failed</span> · ${s.passed}/${s.total}` : `<span class="ok">✓ ${s.passed}/${s.total} passed</span>`;
+      return `<tr><td>${new Date(r.startedAt).toLocaleString()}</td><td>${esc(scope)}<div class="hint">${esc(extras)}</div></td><td>${result}</td>
+        <td class="num">${fmtMs(Date.parse(r.finishedAt) - Date.parse(r.startedAt))}</td>
+        <td>${r.report ? `<a href="${r.report}" target="_blank" rel="noopener">Report ↗</a>` : ''}</td></tr>`;
+    }).join('')}</tbody></table>`;
+  }
+
+  // ── Boot ─────────────────────────────────────────────────────────────
+  (async () => {
+    const cat = await api('/api/catalog');
+    features = cat.features;
+    $('bugs').innerHTML = Object.entries(cat.bugs).map(([id, d]) =>
+      `<label><input type="checkbox" value="${esc(id)}"><span><code>${esc(id)}</code> — ${esc(d)}</span></label>`).join('');
+    // Default selection: the smoke set.
+    for (const f of features) for (const s of f.scenarios) if (s.tags.includes('@smoke')) selected.add(s.name);
+    markPreset('@smoke');
+    renderFeatures();
+    await refreshStatus();
+    loadHistory();
+    setInterval(refreshStatus, 5000);
+  })().catch((e) => toast(e.message));
+})();
+</script>
+</body>
+</html>

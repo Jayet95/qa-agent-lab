@@ -13,7 +13,8 @@
     "catalog": "tsx scripts/catalog.ts",
     "test:dynamic": "cucumber-js --tags @dynamic",
     "discover": "tsx scripts/discover.ts",
-    "site": "tsx scripts/build-site.ts"
+    "site": "tsx scripts/build-site.ts",
+    "console": "tsx console/server.ts"
   },
   "devDependencies": {
     "@cucumber/cucumber": "^13.3.0",

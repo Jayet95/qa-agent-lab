@@ -7,7 +7,7 @@ each scenario pass or fail live.
 ```mermaid
 sequenceDiagram
   participant V as Visitor (browser)
-  participant L as Live Lab (Cloudflare Pages + Functions)
+  participant L as Live Lab (Cloudflare Worker + static page)
   participant D as D1 database
   participant G as GitHub Actions (lab-run.yml)
   V->>L: POST /api/run {preset, bug}
@@ -52,53 +52,44 @@ access tokens** → **Fine-grained tokens** → **Generate new token**
   (Metadata: Read-only is added automatically). Nothing else.
 - **Generate**, then copy the token. This is **`GITHUB_TOKEN`** below.
 
-### 3. Deploy PayDemo on Cloudflare Pages
+### 3. Deploy PayDemo (Cloudflare Worker)
 
-Cloudflare dashboard → **Workers & Pages** → **Create** → **Pages** →
-**Connect to Git** → choose `Jayet95/qa-agent-lab`
+Cloudflare dashboard → **Workers & Pages** → **Create** → **Import a repository** → `Jayet95/qa-agent-lab`
 
 | Setting | Value |
 |---|---|
-| Project name | `paydemo` (or anything) |
-| Production branch | `master` |
-| Build command | `cd app && npm ci && npx expo export --platform web` |
-| Build output directory | `app/dist` |
-| Environment variable | `NODE_VERSION` = `22` |
+| Project name | `paydemo` (must match `app/wrangler.jsonc`) |
+| Root directory | `app` |
+| Build command | `npm ci && npx expo export --platform web` |
+| Deploy command | `npx wrangler deploy` |
+| Build variable | `NODE_VERSION` = `22` |
 
-Save and deploy. Note the URL (e.g. `https://paydemo-xyz.pages.dev`).
-Single-page routes like `/wallet` work out of the box.
+Result: `https://paydemo.<account>.workers.dev`. Deep links (`/wallet`) work via single-page-app fallback.
 
 ### 4. Create the database
 
-**Workers & Pages** → **D1 SQL Database** → **Create** → name `qa-lab`.
-(Tables are created automatically on first use.)
+**Storage & Databases** → **D1 SQL Database** → **Create** → name `qa-lab`.
+Copy its **Database ID** into `lab/wrangler.jsonc` (`database_id`) and push. It is an identifier, not a secret. Tables are created automatically on first use.
 
-### 5. Deploy the Live Lab on Cloudflare Pages
+### 5. Deploy the Live Lab (Cloudflare Worker)
 
-**Workers & Pages** → **Create** → **Pages** → **Connect to Git** → `Jayet95/qa-agent-lab` again
+**Workers & Pages** → **Create** → **Import a repository** → `Jayet95/qa-agent-lab` again
 
 | Setting | Value |
 |---|---|
-| Project name | `qa-agent-lab-live` (or anything) |
-| Production branch | `master` |
-| Root directory (advanced) | `lab` |
-| Build command | *(leave empty)* |
-| Build output directory | `public` |
+| Project name | `qa-agent-lab-live` (must match `lab/wrangler.jsonc`) |
+| Root directory | `lab` |
+| Build command | *(empty)* |
+| Deploy command | `npx wrangler deploy` |
 
-Save and deploy, then in the project → **Settings**:
+After the first deploy, open the Worker → **Settings** → **Variables and secrets** → add two of type **Secret**:
 
-- **Bindings** → **Add** → **D1 database** → Variable name **`LAB_DB`** → database `qa-lab`
-- **Variables and Secrets** (Production) → add:
+| Name | Value |
+|---|---|
+| `GITHUB_TOKEN` | the token from step 2 |
+| `LAB_RESULTS_SECRET` | the string from step 1 |
 
-| Name | Type | Value |
-|---|---|---|
-| `GITHUB_TOKEN` | Secret | the token from step 2 |
-| `LAB_RESULTS_SECRET` | Secret | the string from step 1 |
-| `PAYDEMO_URL` | Text | the PayDemo URL from step 3 |
-| `DASHBOARD_URL` | Text | *(optional)* `https://jayet95.github.io/qa-agent-lab/` |
-
-**Deployments** → **Retry deployment** (bindings and secrets apply to new deployments).
-Note the Lab URL (e.g. `https://qa-agent-lab-live.pages.dev`).
+The D1 binding and `PAYDEMO_URL` come from `lab/wrangler.jsonc`. Note the Lab URL (`https://qa-agent-lab-live.<account>.workers.dev`).
 
 ### 6. Tell GitHub where the Lab is
 
@@ -118,7 +109,7 @@ see **"🐞 Caught it! … 3 scenarios fail"**.
 ## Local development
 
 ```bash
-cd lab && npm install && npm run dev        # http://localhost:8788 (local D1)
+cd lab && npm install && npm run dev        # http://localhost:8788 (Worker + local D1)
 ```
 
 Without `GITHUB_TOKEN` the Run button is disabled, but you can drive a run

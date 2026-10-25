@@ -1,0 +1,28 @@
+// Cloudflare Workers deployment for the Live Lab.
+// Cloudflare settings: Root directory "lab", Build command (empty),
+// Deploy command "npx wrangler deploy".
+// Secrets (Settings → Variables and secrets, type Secret): GITHUB_TOKEN, LAB_RESULTS_SECRET
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "qa-agent-lab-live",
+  "main": "src/worker.js",
+  "compatibility_date": "2025-09-01",
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS"
+  },
+  "d1_databases": [
+    {
+      "binding": "LAB_DB",
+      "database_name": "qa-lab",
+      // Set from the D1 database you create (not a secret).
+      "database_id": "00000000-0000-0000-0000-000000000000"
+    }
+  ],
+  "vars": {
+    "PAYDEMO_URL": "https://paydemo.jayet95.workers.dev",
+    "GITHUB_REPO": "Jayet95/qa-agent-lab"
+  },
+  // Secrets added in the dashboard survive deploys; plain vars come from here.
+  "keep_vars": true
+}

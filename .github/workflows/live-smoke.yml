@@ -1,0 +1,80 @@
+name: Live smoke
+
+# Smoke-tests the DEPLOYED PayDemo (Cloudflare) with the same Gherkin suite:
+# after every green QA run on master (giving Cloudflare time to deploy),
+# daily, and on demand. Testing the real deployment catches what a local
+# build can't: config, routing, caching, CDN.
+on:
+  workflow_run:
+    workflows: [QA]
+    types: [completed]
+    branches: [master]
+  schedule:
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+    inputs:
+      tags:
+        description: Cucumber tag expression
+        default: '@smoke'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: live-smoke
+  cancel-in-progress: true
+
+jobs:
+  smoke:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      BASE_URL: ${{ vars.PAYDEMO_URL || 'https://paydemo.jayet95.workers.dev' }}
+      TAGS: ${{ inputs.tags || '@smoke' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: e2e/package-lock.json
+
+      - name: Install test dependencies
+        working-directory: e2e
+        run: |
+          npm ci --no-audit --no-fund
+          npx playwright install --with-deps chromium
+
+      - name: Wait for the latest deploy to be reachable
+        run: |
+          # QA just went green; Cloudflare's own build may still be deploying.
+          if [ "${{ github.event_name }}" = "workflow_run" ]; then sleep 150; fi
+          npx --prefix e2e wait-on "$BASE_URL" --timeout 120000
+
+      - name: Smoke test the live site
+        working-directory: e2e
+        run: |
+          echo "Testing $BASE_URL with tags: $TAGS"
+          RETRY=1 LEARN=0 npx cucumber-js --tags "$TAGS"
+
+      - name: Summary
+        if: always()
+        working-directory: e2e
+        run: |
+          npm run kpi --silent || true
+          node -e '
+            let k; try { k = require("./reports/kpi.json"); } catch { process.exit(0); }
+            const t = k.totals;
+            console.log(`## ${t.failed ? "❌" : "✅"} Live smoke: ${t.passed}/${t.total} passed against ${process.env.BASE_URL}`);
+            for (const s of k.scenarios) console.log(`- ${s.status === "passed" ? "✅" : "❌"} ${s.name}`);
+          ' >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: live-smoke-report
+          path: e2e/reports
+          retention-days: 14

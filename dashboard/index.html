@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>QA Agent Lab — Quality dashboard</title>
+<title>QA Agent Lab · Quality dashboard</title>
 <style>
   /* Tokens: dataviz reference palette (validated light + dark). */
   :root {
@@ -73,7 +73,7 @@
 <body>
 <main>
   <header>
-    <h1>QA Agent Lab — Quality dashboard</h1>
+    <h1>QA Agent Lab · Quality dashboard</h1>
     <div class="meta" id="meta"></div>
   </header>
 
@@ -96,7 +96,7 @@
   </section>
 
   <section class="card">
-    <h2>Dynamic DOM reader — how fields were resolved</h2>
+    <h2>Dynamic DOM reader: how fields were resolved</h2>
     <p class="sub">Per market sign-up form: which layer named each field (catalog → fuzzy → semantic map → type). Everything resolving from the catalog means the reader has learned the form.</p>
     <div class="tabs" role="group" aria-label="View">
       <button id="v-chart" aria-pressed="true">Chart</button>
@@ -121,7 +121,7 @@
   const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const secs = (ms) => (ms >= 60000 ? `${(ms / 60000).toFixed(1)} min` : `${(ms / 1000).toFixed(1)} s`);
 
-  if (!D) { document.querySelector('main').insertAdjacentHTML('beforeend', '<p class="empty">No data — run the suite, then npm run site.</p>'); return; }
+  if (!D) { document.querySelector('main').insertAdjacentHTML('beforeend', '<p class="empty">No data. Run the suite, then npm run site.</p>'); return; }
   const { kpi, bugHunt, dynamic } = D;
 
   $('meta').innerHTML = [

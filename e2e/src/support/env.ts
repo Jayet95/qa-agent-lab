@@ -8,4 +8,6 @@ export const env = {
   /** Default timeout for web-first assertions — we wait for state, never sleep. */
   expectTimeout: Number(process.env.EXPECT_TIMEOUT ?? 6000),
   mobileViewport: process.env.VIEWPORT === 'mobile',
+  /** Testing HUD: on by default when headed; HUD=1 forces it on, HUD=0 off. */
+  hud: process.env.HUD === '1' || (process.env.HEADED === '1' && process.env.HUD !== '0'),
 };

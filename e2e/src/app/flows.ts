@@ -16,13 +16,13 @@ export class OnboardingFlow {
   ) {}
 
   async startSignUp() {
-    await this.welcome.getStarted.click();
-    await expect(this.signUpPage.submit).toBeVisible();
+    await (await this.welcome.getStartedHealed()).click();
+    await expect(this.signUpPage.email).toBeVisible();
   }
 
   async submitSignUp(customer: NewCustomer) {
     await this.signUpPage.fill(customer);
-    await this.signUpPage.submit.click();
+    await (await this.signUpPage.submitHealed()).click();
   }
 
   async signUp(customer: NewCustomer) {

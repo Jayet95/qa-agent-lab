@@ -1,6 +1,7 @@
 // Cucumber configuration — see docs/ARCHITECTURE.md for the layering.
 const retry = Number(process.env.RETRY ?? 1);
-const parallel = Number(process.env.PARALLEL ?? 2);
+// One visible browser at a time when headed, so the HUD controls one run.
+const parallel = Number(process.env.PARALLEL ?? (process.env.HEADED === '1' ? 0 : 2));
 const out = process.env.REPORT_DIR ?? 'reports';
 
 module.exports = {

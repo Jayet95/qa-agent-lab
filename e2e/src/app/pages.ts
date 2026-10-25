@@ -1,4 +1,5 @@
 import type { Locator, Page } from '@playwright/test';
+import { healable, type HealingEvent } from '../dynamic/smartFind';
 
 /**
  * Page objects: the only place that knows about selectors.
@@ -6,14 +7,22 @@ import type { Locator, Page } from '@playwright/test';
  * web — the same IDs Detox will use on mobile.
  */
 abstract class Screen {
-  constructor(protected readonly page: Page) {}
+  constructor(
+    protected readonly page: Page,
+    protected readonly healing: HealingEvent[] = [],
+  ) {}
   protected id(testId: string): Locator {
     return this.page.getByTestId(testId);
+  }
+  /** testID first; if it has vanished, heal via smart find and log it. */
+  protected heal(testId: string, description: string): Promise<Locator> {
+    return healable(this.page, testId, description, this.healing);
   }
 }
 
 export class WelcomePage extends Screen {
   readonly getStarted = this.id('welcome-get-started');
+  getStartedHealed = () => this.heal('welcome-get-started', 'Get started button');
 }
 
 export class SignUpPage extends Screen {
@@ -21,6 +30,7 @@ export class SignUpPage extends Screen {
   readonly email = this.id('signup-email');
   readonly password = this.id('signup-password');
   readonly submit = this.id('signup-submit');
+  submitHealed = () => this.heal('signup-submit', 'Create account button');
 
   error(field: 'name' | 'email' | 'password'): Locator {
     return this.id(`signup-${field}-error`);
